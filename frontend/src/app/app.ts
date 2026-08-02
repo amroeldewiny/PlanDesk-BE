@@ -1,12 +1,30 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject, OnInit, signal } from '@angular/core';
+
+import { HealthService } from './core/services/health';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [],
   templateUrl: './app.html',
-  styleUrl: './app.scss'
+  styleUrl: './app.scss',
 })
-export class App {
-  protected readonly title = signal('frontend');
+export class App implements OnInit {
+  private readonly healthService = inject(HealthService);
+
+  protected readonly title = 'PlanDesk BE';
+  protected readonly apiStatus = signal('Checking API connection...');
+  protected readonly isConnected = signal(false);
+
+  ngOnInit(): void {
+    this.healthService.checkHealth().subscribe({
+      next: (response) => {
+        this.apiStatus.set(response.message);
+        this.isConnected.set(true);
+      },
+      error: () => {
+        this.apiStatus.set('Unable to connect to the PlanDesk BE API');
+        this.isConnected.set(false);
+      },
+    });
+  }
 }
