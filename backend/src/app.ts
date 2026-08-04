@@ -4,6 +4,8 @@ import express, {
   type Request,
   type Response,
 } from 'express';
+import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
 
 import { prisma } from './config/database.js';
 import { AppError } from './common/errors/app-error.js';
@@ -11,13 +13,28 @@ import { authRouter } from './modules/auth/auth.routes.js';
 
 export const app = express();
 
+app.use(helmet());
+
+app.use(
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 100,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+    message: {
+      success: false,
+      message: 'Too many requests. Please try again later.',
+    },
+  }),
+);
+
 app.use(
   cors({
     origin: process.env.CLIENT_URL ?? 'http://localhost:4200',
   }),
 );
 
-app.use(express.json());
+app.use(express.json({ limit: '100kb' }));
 
 app.use('/api/auth', authRouter);
 

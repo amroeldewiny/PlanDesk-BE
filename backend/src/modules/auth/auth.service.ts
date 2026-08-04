@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 
 import { AppError } from '../../common/errors/app-error.js';
 import { prisma } from '../../config/database.js';
+import { Prisma } from '../../generated/prisma/client.js';
 import type { LoginInput, RegisterInput } from './auth.schema.js';
 import { createAccessToken } from './token.service.js';
 
@@ -38,46 +39,57 @@ export const registerCompany = async (input: RegisterInput) => {
   const passwordHash = await bcrypt.hash(input.password, 12);
   const slug = createSlug(input.companyName);
 
-  return prisma.$transaction(async (transaction) => {
-    const company = await transaction.company.create({
-      data: {
-        name: input.companyName,
-        slug,
-        vatNumber: input.vatNumber || null,
-      },
-    });
+  try {
+    return await prisma.$transaction(async (transaction) => {
+      const company = await transaction.company.create({
+        data: {
+          name: input.companyName,
+          slug,
+          vatNumber: input.vatNumber || null,
+        },
+      });
 
-    const user = await transaction.user.create({
-      data: {
-        companyId: company.id,
-        email: input.email,
-        passwordHash,
-        firstName: input.firstName,
-        lastName: input.lastName,
-        role: 'COMPANY_OWNER',
-      },
-      select: {
-        id: true,
-        companyId: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-        isActive: true,
-        createdAt: true,
-      },
-    });
+      const user = await transaction.user.create({
+        data: {
+          companyId: company.id,
+          email: input.email,
+          passwordHash,
+          firstName: input.firstName,
+          lastName: input.lastName,
+          role: 'COMPANY_OWNER',
+        },
+        select: {
+          id: true,
+          companyId: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          isActive: true,
+          createdAt: true,
+        },
+      });
 
-    return {
-      company: {
-        id: company.id,
-        name: company.name,
-        slug: company.slug,
-        vatNumber: company.vatNumber,
-      },
-      user,
-    };
-  });
+      return {
+        company: {
+          id: company.id,
+          name: company.name,
+          slug: company.slug,
+          vatNumber: company.vatNumber,
+        },
+        user,
+      };
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      throw new AppError(409, 'An account with this email already exists');
+    }
+
+    throw error;
+  }
 };
 
 export const loginUser = async (input: LoginInput) => {
