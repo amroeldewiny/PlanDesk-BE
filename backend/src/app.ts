@@ -6,6 +6,8 @@ import express, {
 } from 'express';
 
 import { prisma } from './config/database.js';
+import { AppError } from './common/errors/app-error.js';
+import { authRouter } from './modules/auth/auth.routes.js';
 
 export const app = express();
 
@@ -16,6 +18,8 @@ app.use(
 );
 
 app.use(express.json());
+
+app.use('/api/auth', authRouter);
 
 app.get('/api/health', async (_request: Request, response: Response) => {
   try {
@@ -53,6 +57,16 @@ app.use(
     response: Response,
     _next: NextFunction,
   ) => {
+    if (error instanceof AppError) {
+      response.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+        details: error.details,
+      });
+
+      return;
+    }
+
     console.error(error);
 
     response.status(500).json({

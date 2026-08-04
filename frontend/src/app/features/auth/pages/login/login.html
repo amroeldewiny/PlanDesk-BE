@@ -1,0 +1,88 @@
+<main class="auth-page">
+  <section class="brand-panel">
+    <div class="brand-content">
+      <p class="brand-label">PlanDesk BE</p>
+
+      <h1>Plan work.<br />Manage your team.<br />Grow your business.</h1>
+
+      <p class="brand-description">
+        One platform for customers, employees, work orders and planning.
+      </p>
+
+      <div class="feature-list">
+        <span>✓ Clear work planning</span>
+        <span>✓ Employee time registration</span>
+        <span>✓ Customer and invoice management</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="form-panel">
+    <div class="login-card">
+      <div class="mobile-brand">PlanDesk BE</div>
+
+      <p class="eyebrow">Welcome back</p>
+      <h2>Log in to your account</h2>
+      <p class="intro">Enter your account details to continue.</p>
+
+      @if (errorMessage()) {
+        <div class="error-message" role="alert">
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <form [formGroup]="loginForm" (ngSubmit)="submit()">
+        <label for="email">Email address</label>
+
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          autocomplete="email"
+          placeholder="name@company.be"
+        />
+
+        @if (
+          loginForm.controls.email.touched &&
+          loginForm.controls.email.invalid
+        ) {
+          <p class="field-error">Enter a valid email address.</p>
+        }
+
+        <label for="password">Password</label>
+
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          autocomplete="current-password"
+          placeholder="Enter your password"
+        />
+
+        @if (
+          loginForm.controls.password.touched &&
+          loginForm.controls.password.invalid
+        ) {
+          <p class="field-error">
+            Your password must contain at least 8 characters.
+          </p>
+        }
+
+        <button
+          type="submit"
+          [disabled]="loginForm.invalid || isSubmitting()"
+        >
+          @if (isSubmitting()) {
+            Logging in…
+          } @else {
+            Log in
+          }
+        </button>
+      </form>
+
+      <p class="support-text">
+        PlanDesk BE — service management made simple.
+      </p>
+    </div>
+  </section>
+</main>

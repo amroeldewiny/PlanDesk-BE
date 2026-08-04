@@ -1,0 +1,179 @@
+<div class="dashboard-layout">
+  <aside class="sidebar">
+    <div class="logo">
+      <span class="logo-mark">P</span>
+      <span>PlanDesk BE</span>
+    </div>
+
+    <nav>
+      <a class="active" href="#dashboard">
+        <span>▦</span>
+        Dashboard
+      </a>
+
+      <a href="#planning">
+        <span>▣</span>
+        Planning
+      </a>
+
+      <a href="#work-orders">
+        <span>✓</span>
+        Work orders
+      </a>
+
+      <a href="#customers">
+        <span>♙</span>
+        Customers
+      </a>
+
+      <a href="#employees">
+        <span>♟</span>
+        Employees
+      </a>
+
+      <a href="#invoices">
+        <span>€</span>
+        Invoices
+      </a>
+    </nav>
+
+    <button class="logout-button" type="button" (click)="logout()">
+      Log out
+    </button>
+  </aside>
+
+  <main class="main-content">
+    @if (isLoading()) {
+      <section class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading your workspace…</p>
+      </section>
+    } @else if (errorMessage()) {
+      <section class="error-state">
+        {{ errorMessage() }}
+      </section>
+    } @else {
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Workspace</p>
+          <h1>{{ currentCompany()?.name ?? 'PlanDesk BE' }}</h1>
+        </div>
+
+        <div class="user-profile">
+          <div class="user-details">
+            <strong>
+              {{ currentUser()?.firstName }}
+              {{ currentUser()?.lastName }}
+            </strong>
+
+            <span>{{ currentUser()?.role }}</span>
+          </div>
+
+          <div class="avatar">{{ initials() }}</div>
+        </div>
+      </header>
+
+      <section class="welcome-panel">
+        <div>
+          <p class="eyebrow">Good to see you</p>
+
+          <h2>
+            Welcome back, {{ currentUser()?.firstName }}
+          </h2>
+
+          <p>
+            Here is an overview of your business activity today.
+          </p>
+        </div>
+
+        <button type="button">+ Create work order</button>
+      </section>
+
+      <section class="stats-grid">
+        <article class="stat-card">
+          <div class="stat-icon blue">▣</div>
+          <div>
+            <span>Jobs today</span>
+            <strong>0</strong>
+            <small>No jobs planned yet</small>
+          </div>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-icon purple">♟</div>
+          <div>
+            <span>Active employees</span>
+            <strong>1</strong>
+            <small>Company owner</small>
+          </div>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-icon green">✓</div>
+          <div>
+            <span>Completed jobs</span>
+            <strong>0</strong>
+            <small>This week</small>
+          </div>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-icon orange">€</div>
+          <div>
+            <span>Expected revenue</span>
+            <strong>€0</strong>
+            <small>This month</small>
+          </div>
+        </article>
+      </section>
+
+      <section class="content-grid">
+        <article class="content-card">
+          <div class="card-heading">
+            <div>
+              <p class="eyebrow">Planning</p>
+              <h3>Today’s work</h3>
+            </div>
+
+            <button class="text-button" type="button">
+              View planning
+            </button>
+          </div>
+
+          <div class="empty-state">
+            <div class="empty-icon">▦</div>
+            <h4>No work planned today</h4>
+            <p>Create your first work order to start planning.</p>
+          </div>
+        </article>
+
+        <article class="content-card">
+          <div class="card-heading">
+            <div>
+              <p class="eyebrow">Activity</p>
+              <h3>Recent updates</h3>
+            </div>
+          </div>
+
+          <div class="activity-item">
+            <div class="activity-icon">✓</div>
+
+            <div>
+              <strong>Workspace created</strong>
+              <p>Your PlanDesk BE account is ready.</p>
+            </div>
+          </div>
+
+          <div class="company-information">
+            <span>Company</span>
+            <strong>{{ currentCompany()?.name }}</strong>
+
+            @if (currentCompany()?.vatNumber) {
+              <small>{{ currentCompany()?.vatNumber }}</small>
+            }
+          </div>
+        </article>
+      </section>
+    }
+  </main>
+</div>
