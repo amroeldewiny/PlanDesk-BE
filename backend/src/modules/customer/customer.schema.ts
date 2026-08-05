@@ -1,0 +1,41 @@
+import { z } from 'zod';
+
+const optionalText = (maximum: number) =>
+  z
+    .string()
+    .trim()
+    .max(maximum)
+    .optional()
+    .transform((value) => value || undefined);
+
+export const createCustomerSchema = z.object({
+  name: z.string().trim().min(2).max(150),
+  contactPerson: optionalText(100),
+  email: z.email().trim().toLowerCase().optional().or(z.literal('')),
+  phone: optionalText(30),
+  vatNumber: optionalText(30),
+  addressLine: optionalText(200),
+  postalCode: optionalText(20),
+  city: optionalText(100),
+  countryCode: z.string().trim().length(2).toUpperCase().default('BE'),
+  notes: optionalText(2000),
+});
+
+export const updateCustomerSchema = createCustomerSchema
+  .partial()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: 'At least one field must be provided',
+  });
+
+export const customerIdSchema = z.uuid();
+
+export const customerListQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  search: z.string().trim().max(100).default(''),
+  status: z.enum(['active', 'archived', 'all']).default('active'),
+});
+
+export type CreateCustomerInput = z.infer<typeof createCustomerSchema>;
+export type UpdateCustomerInput = z.infer<typeof updateCustomerSchema>;
+export type CustomerListQuery = z.infer<typeof customerListQuerySchema>;

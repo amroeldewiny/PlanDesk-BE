@@ -1,0 +1,166 @@
+<main class="customer-form-page">
+  <header>
+    <div>
+      <a routerLink="/customers">← Back to customers</a>
+        <h1>
+        {{ isEditMode() ? 'Edit customer' : 'Add customer' }}
+        </h1>
+
+        <p>
+        {{
+            isEditMode()
+            ? 'Update the customer information.'
+            : 'Create a new customer for your company.'
+        }}
+        </p>
+    </div>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="error-message">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <form [formGroup]="customerForm" (ngSubmit)="submit()">
+    <section>
+      <h2>Customer information</h2>
+
+      <div>
+        <label for="name">Customer or company name *</label>
+        <input
+          id="name"
+          type="text"
+          formControlName="name"
+          autocomplete="organization"
+        />
+
+        @if (
+          customerForm.controls.name.touched &&
+          customerForm.controls.name.invalid
+        ) {
+          <small>Enter a customer name of at least 2 characters.</small>
+        }
+      </div>
+
+      <div>
+        <label for="contactPerson">Contact person</label>
+        <input
+          id="contactPerson"
+          type="text"
+          formControlName="contactPerson"
+          autocomplete="name"
+        />
+      </div>
+
+      <div>
+        <label for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          autocomplete="email"
+        />
+
+        @if (
+          customerForm.controls.email.touched &&
+          customerForm.controls.email.invalid
+        ) {
+          <small>Enter a valid email address.</small>
+        }
+      </div>
+
+      <div>
+        <label for="phone">Phone</label>
+        <input
+          id="phone"
+          type="tel"
+          formControlName="phone"
+          autocomplete="tel"
+        />
+      </div>
+
+      <div>
+        <label for="vatNumber">VAT number</label>
+        <input
+          id="vatNumber"
+          type="text"
+          formControlName="vatNumber"
+        />
+      </div>
+    </section>
+
+    <section>
+      <h2>Address</h2>
+
+      <div>
+        <label for="addressLine">Street and number</label>
+        <input
+          id="addressLine"
+          type="text"
+          formControlName="addressLine"
+          autocomplete="street-address"
+        />
+      </div>
+
+      <div>
+        <label for="postalCode">Postal code</label>
+        <input
+          id="postalCode"
+          type="text"
+          formControlName="postalCode"
+          autocomplete="postal-code"
+        />
+      </div>
+
+      <div>
+        <label for="city">City</label>
+        <input
+          id="city"
+          type="text"
+          formControlName="city"
+          autocomplete="address-level2"
+        />
+      </div>
+
+      <div>
+        <label for="countryCode">Country code</label>
+        <input
+          id="countryCode"
+          type="text"
+          formControlName="countryCode"
+          maxlength="2"
+          autocomplete="country"
+        />
+      </div>
+    </section>
+
+    <section>
+      <h2>Notes</h2>
+
+      <div>
+        <label for="notes">Internal notes</label>
+        <textarea
+          id="notes"
+          formControlName="notes"
+          rows="5"
+        ></textarea>
+      </div>
+    </section>
+
+    <div class="form-actions">
+      <a routerLink="/customers">Cancel</a>
+
+      <button
+        type="submit"
+        [disabled]="isSubmitting()"
+      >
+       @if (isSubmitting()) {
+            Saving customer...
+        } @else {
+            {{ isEditMode() ? 'Update customer' : 'Save customer' }}
+        }
+      </button>
+    </div>
+  </form>
+</main>

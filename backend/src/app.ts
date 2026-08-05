@@ -10,6 +10,7 @@ import helmet from 'helmet';
 import { prisma } from './config/database.js';
 import { AppError } from './common/errors/app-error.js';
 import { authRouter } from './modules/auth/auth.routes.js';
+import { customerRouter } from './modules/customer/customer.routes.js';
 
 export const app = express();
 
@@ -37,6 +38,7 @@ app.use(
 app.use(express.json({ limit: '100kb' }));
 
 app.use('/api/auth', authRouter);
+app.use('/api/customers', customerRouter);
 
 app.get('/api/health', async (_request: Request, response: Response) => {
   try {

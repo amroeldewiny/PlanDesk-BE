@@ -20,6 +20,33 @@ export const routes: Routes = [
     title: 'Dashboard | PlanDesk BE',
   },
   {
+    path: 'customers',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import(
+        './features/customers/pages/customer-list/customer-list'
+      ).then((component) => component.CustomerList),
+    title: 'Customers | PlanDesk BE',
+  },
+  {
+    path: 'customers/new',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import(
+        './features/customers/pages/customer-form/customer-form'
+      ).then((component) => component.CustomerForm),
+    title: 'Add Customer | PlanDesk BE',
+  },
+  {
+    path: 'customers/:id/edit',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import(
+        './features/customers/pages/customer-form/customer-form'
+      ).then((component) => component.CustomerForm),
+    title: 'Edit Customer | PlanDesk BE',
+  },
+  {
     path: '',
     pathMatch: 'full',
     redirectTo: 'login',

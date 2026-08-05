@@ -1,0 +1,195 @@
+<main class="customers-page">
+  <header class="page-header">
+    <div>
+      <a class="back-link" routerLink="/dashboard">
+        ← Dashboard
+      </a>
+
+      <p class="eyebrow">Customer management</p>
+      <h1>Customers</h1>
+      <p class="subtitle">
+        Manage the customers connected to your company.
+      </p>
+    </div>
+
+    <a class="primary-button" routerLink="/customers/new">
+      + Add customer
+    </a>
+  </header>
+
+  <section class="toolbar">
+    <div class="search">
+      <input
+        type="search"
+        placeholder="Search by name, email, phone or VAT number"
+        [value]="searchTerm()"
+        (input)="updateSearch($event)"
+        (keyup.enter)="searchCustomers()"
+      />
+
+      <button type="button" (click)="searchCustomers()">
+        Search
+      </button>
+    </div>
+
+    <select
+      aria-label="Customer status"
+      [value]="selectedStatus()"
+      (change)="changeStatus($event)"
+    >
+      <option value="active">Active customers</option>
+      <option value="archived">Archived customers</option>
+      <option value="all">All customers</option>
+    </select>
+  </section>
+
+  @if (errorMessage()) {
+    <section class="error-message">
+      {{ errorMessage() }}
+    </section>
+  }
+
+  @if (isLoading()) {
+    <section class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading customers...</p>
+    </section>
+  } @else if (!errorMessage() && customers().length === 0) {
+    <section class="empty-state">
+      <div class="empty-icon">♙</div>
+      <h2>No customers found</h2>
+
+      @if (searchTerm()) {
+        <p>Try another search term or change the status filter.</p>
+      } @else {
+        <p>Add your first customer to start building your workspace.</p>
+        <a class="primary-button" routerLink="/customers/new">
+          + Add customer
+        </a>
+      }
+    </section>
+  } @else if (!errorMessage()) {
+    <section class="table-card">
+      <div class="table-summary">
+        <strong>{{ pagination().total }}</strong>
+        customers found
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Contact</th>
+              <th>Location</th>
+              <th>VAT number</th>
+              <th>Status</th>
+              <th class="actions-heading">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (customer of customers(); track customer.id) {
+              <tr>
+                <td>
+                  <div class="customer-name">
+                    <div class="customer-avatar">
+                      {{ customer.name.charAt(0).toUpperCase() }}
+                    </div>
+
+                    <div>
+                      <strong>{{ customer.name }}</strong>
+                      <span>
+                        {{ customer.contactPerson || 'No contact person' }}
+                      </span>
+                    </div>
+                  </div>
+                </td>
+
+                <td>
+                  <div class="contact-information">
+                    <span>{{ customer.email || 'No email' }}</span>
+                    <small>{{ customer.phone || 'No phone number' }}</small>
+                  </div>
+                </td>
+
+                <td>
+                  @if (customer.city || customer.postalCode) {
+                    {{ customer.postalCode }} {{ customer.city }}
+                  } @else {
+                    <span class="muted">No address</span>
+                  }
+                </td>
+
+                <td>
+                  {{ customer.vatNumber || '—' }}
+                </td>
+
+                <td>
+                  <span
+                    class="status"
+                    [class.archived]="!customer.isActive"
+                  >
+                    {{ customer.isActive ? 'Active' : 'Archived' }}
+                  </span>
+                </td>
+
+                <td class="actions">
+                  <a
+                    class="edit-button"
+                    [routerLink]="['/customers', customer.id, 'edit']"
+                  >
+                    Edit
+                  </a>
+
+                  @if (customer.isActive) {
+                    <button
+                      type="button"
+                      (click)="archiveCustomer(customer)"
+                    >
+                      Archive
+                    </button>
+                  } @else {
+                    <button
+                      type="button"
+                      (click)="restoreCustomer(customer)"
+                    >
+                      Restore
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <footer class="pagination">
+        <span>
+          Page {{ pagination().page }}
+          of {{ pagination().totalPages }}
+        </span>
+
+        <div>
+          <button
+            type="button"
+            [disabled]="pagination().page <= 1"
+            (click)="previousPage()"
+          >
+            Previous
+          </button>
+
+          <button
+            type="button"
+            [disabled]="
+              pagination().page >= pagination().totalPages
+            "
+            (click)="nextPage()"
+          >
+            Next
+          </button>
+        </div>
+      </footer>
+    </section>
+  }
+</main>
