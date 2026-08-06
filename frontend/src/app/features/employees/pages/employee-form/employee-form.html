@@ -1,0 +1,185 @@
+<main class="employee-form-page">
+  <header>
+    <a routerLink="/employees">← Back to employees</a>
+
+    <h1>
+      {{ isEditMode() ? 'Edit employee' : 'Add employee' }}
+    </h1>
+
+    <p>
+      {{
+        isEditMode()
+          ? 'Update employee and employment information.'
+          : 'Add a new employee to your company.'
+      }}
+    </p>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="error-message">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (isLoading()) {
+    <section class="loading-state">
+      Loading employee...
+    </section>
+  } @else {
+    <form
+      [formGroup]="employeeForm"
+      (ngSubmit)="submit()"
+    >
+      <section>
+        <h2>Personal information</h2>
+
+        <div>
+          <label for="firstName">First name *</label>
+          <input
+            id="firstName"
+            type="text"
+            formControlName="firstName"
+            autocomplete="given-name"
+          />
+
+          @if (
+            employeeForm.controls.firstName.touched &&
+            employeeForm.controls.firstName.invalid
+          ) {
+            <small>Enter a valid first name.</small>
+          }
+        </div>
+
+        <div>
+          <label for="lastName">Last name *</label>
+          <input
+            id="lastName"
+            type="text"
+            formControlName="lastName"
+            autocomplete="family-name"
+          />
+
+          @if (
+            employeeForm.controls.lastName.touched &&
+            employeeForm.controls.lastName.invalid
+          ) {
+            <small>Enter a valid last name.</small>
+          }
+        </div>
+
+        <div>
+          <label for="email">Email</label>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            autocomplete="email"
+          />
+
+          @if (
+            employeeForm.controls.email.touched &&
+            employeeForm.controls.email.invalid
+          ) {
+            <small>Enter a valid email address.</small>
+          }
+        </div>
+
+        <div>
+          <label for="phone">Phone</label>
+          <input
+            id="phone"
+            type="tel"
+            formControlName="phone"
+            autocomplete="tel"
+          />
+        </div>
+      </section>
+
+      <section>
+        <h2>Employment information</h2>
+
+        <div>
+          <label for="employeeNumber">Employee number</label>
+          <input
+            id="employeeNumber"
+            type="text"
+            formControlName="employeeNumber"
+          />
+        </div>
+
+        <div>
+          <label for="jobTitle">Job title</label>
+          <input
+            id="jobTitle"
+            type="text"
+            formControlName="jobTitle"
+          />
+        </div>
+
+        <div>
+          <label for="employmentType">Employment type</label>
+          <select
+            id="employmentType"
+            formControlName="employmentType"
+          >
+            @for (type of employmentTypes; track type.value) {
+              <option [value]="type.value">
+                {{ type.label }}
+              </option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label for="startDate">Start date</label>
+          <input
+            id="startDate"
+            type="date"
+            formControlName="startDate"
+          />
+        </div>
+
+        <div>
+          <label for="endDate">End date</label>
+          <input
+            id="endDate"
+            type="date"
+            formControlName="endDate"
+          />
+        </div>
+      </section>
+
+      <section>
+        <h2>Notes</h2>
+
+        <div>
+          <label for="notes">Internal notes</label>
+          <textarea
+            id="notes"
+            rows="5"
+            formControlName="notes"
+          ></textarea>
+        </div>
+      </section>
+
+      <div class="form-actions">
+        <a routerLink="/employees">Cancel</a>
+
+        <button
+          type="submit"
+          [disabled]="isSubmitting()"
+        >
+          @if (isSubmitting()) {
+            Saving employee...
+          } @else {
+            {{
+              isEditMode()
+                ? 'Update employee'
+                : 'Save employee'
+            }}
+          }
+        </button>
+      </div>
+    </form>
+  }
+</main>

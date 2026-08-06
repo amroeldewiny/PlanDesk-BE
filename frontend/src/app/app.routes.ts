@@ -47,6 +47,33 @@ export const routes: Routes = [
     title: 'Edit Customer | PlanDesk BE',
   },
   {
+    path: 'employees',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import(
+        './features/employees/pages/employee-list/employee-list'
+      ).then((component) => component.EmployeeList),
+    title: 'Employees | PlanDesk BE',
+  },
+  {
+    path: 'employees/new',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import(
+        './features/employees/pages/employee-form/employee-form'
+      ).then((component) => component.EmployeeForm),
+    title: 'Add Employee | PlanDesk BE',
+  },
+  {
+    path: 'employees/:id/edit',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import(
+        './features/employees/pages/employee-form/employee-form'
+      ).then((component) => component.EmployeeForm),
+    title: 'Edit Employee | PlanDesk BE',
+  },
+  {
     path: '',
     pathMatch: 'full',
     redirectTo: 'login',

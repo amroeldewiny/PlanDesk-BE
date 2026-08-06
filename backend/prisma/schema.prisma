@@ -14,6 +14,15 @@ enum UserRole {
   EMPLOYEE
 }
 
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  FLEXI_JOB
+  STUDENT
+  CONTRACTOR
+  OTHER
+}
+
 model Company {
   id          String   @id @default(uuid()) @db.Uuid
   name        String
@@ -31,6 +40,7 @@ model Company {
 
   users     User[]
   customers Customer[]
+  employees Employee[]
 
   @@map("companies")
 }
@@ -60,19 +70,47 @@ model Customer {
 }
 
 model User {
-  id           String   @id @default(uuid()) @db.Uuid
-  companyId    String?  @db.Uuid
-  email        String   @unique
+  id           String    @id @default(uuid()) @db.Uuid
+  companyId    String?   @db.Uuid
+  email        String    @unique
   passwordHash String
   firstName    String
   lastName     String
   role         UserRole
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  employee     Employee?
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   company Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@index([companyId])
   @@map("users")
+}
+
+model Employee {
+  id             String         @id @default(uuid()) @db.Uuid
+  companyId      String         @db.Uuid
+  userId         String?        @unique @db.Uuid
+  employeeNumber String?
+  firstName      String
+  lastName       String
+  email          String?
+  phone          String?
+  jobTitle       String?
+  employmentType EmploymentType @default(FULL_TIME)
+  startDate      DateTime?
+  endDate        DateTime?
+  notes          String?
+  isActive       Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([companyId, employeeNumber])
+  @@index([companyId, isActive])
+  @@index([companyId, lastName, firstName])
+  @@map("employees")
 }

@@ -11,6 +11,7 @@ import { prisma } from './config/database.js';
 import { AppError } from './common/errors/app-error.js';
 import { authRouter } from './modules/auth/auth.routes.js';
 import { customerRouter } from './modules/customer/customer.routes.js';
+import { employeeRouter } from './modules/employee/employee.routes.js';
 
 export const app = express();
 
@@ -39,6 +40,7 @@ app.use(express.json({ limit: '100kb' }));
 
 app.use('/api/auth', authRouter);
 app.use('/api/customers', customerRouter);
+app.use('/api/employees', employeeRouter);
 
 app.get('/api/health', async (_request: Request, response: Response) => {
   try {
