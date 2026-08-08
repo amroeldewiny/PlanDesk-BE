@@ -1,0 +1,275 @@
+<section class="detail-page">
+  @if (loading() && !workOrder()) {
+    <div class="state-card">
+      <div class="spinner"></div>
+      <p>Loading work order...</p>
+    </div>
+  } @else if (!workOrder()) {
+    <div class="state-card error-state">
+      <h1>Unable to open work order</h1>
+      <p>{{ errorMessage() || 'Work order not found' }}</p>
+
+      <div class="state-actions">
+        <button type="button" class="secondary-button" (click)="loadWorkOrder()">
+          Try again
+        </button>
+
+        <button type="button" class="primary-button" (click)="backToList()">
+          Back to work orders
+        </button>
+      </div>
+    </div>
+  } @else {
+    @let current = workOrder()!;
+
+    <header class="page-header">
+      <div>
+        <button type="button" class="back-link" (click)="backToList()">
+          ← Back to work orders
+        </button>
+
+        <p class="page-eyebrow">{{ current.reference }}</p>
+        <h1>{{ current.title }}</h1>
+
+        <div class="header-badges">
+          <span
+            [class]="'status-badge status-' +
+              current.status.toLowerCase()"
+          >
+            {{ statusLabels[current.status] }}
+          </span>
+
+          <span
+            [class]="'priority-badge priority-' +
+              current.priority.toLowerCase()"
+          >
+            {{ priorityLabels[current.priority] }} priority
+          </span>
+        </div>
+      </div>
+        <button
+            type="button"
+            class="primary-button edit-button"
+            (click)="editWorkOrder()"
+            >
+            Edit work order
+        </button>
+    </header>
+
+    @if (errorMessage()) {
+      <div class="message error-message" role="alert">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    @if (successMessage()) {
+      <div class="message success-message" role="status">
+        {{ successMessage() }}
+      </div>
+    }
+
+    <section class="status-card">
+      <div>
+        <h2>Status workflow</h2>
+        <p>
+          Current status:
+          <strong>{{ statusLabels[current.status] }}</strong>
+        </p>
+      </div>
+
+      <div class="status-actions">
+        @for (status of availableTransitions(); track status) {
+          <button
+            type="button"
+            class="status-action"
+            [class.cancel-action]="status === 'CANCELLED'"
+            [disabled]="updatingStatus() !== null"
+            (click)="changeStatus(status)"
+          >
+            @if (updatingStatus() === status) {
+              Updating...
+            } @else {
+              {{ statusActionLabels[status] }}
+            }
+          </button>
+        }
+
+        @if (availableTransitions().length === 0) {
+          <span class="workflow-complete">
+            This work order has no further status transitions.
+          </span>
+        }
+      </div>
+    </section>
+
+    <div class="detail-layout">
+      <main class="main-column">
+        <section class="detail-card">
+          <div class="card-heading">
+            <h2>Work details</h2>
+          </div>
+
+          @if (current.description) {
+            <p class="long-text">{{ current.description }}</p>
+          } @else {
+            <p class="empty-value">No description was provided.</p>
+          }
+        </section>
+
+        <section class="detail-card">
+          <div class="card-heading">
+            <h2>Customer</h2>
+          </div>
+
+          <div class="customer-information">
+            <strong>{{ current.customer.name }}</strong>
+
+            @if (current.customer.contactPerson) {
+              <span>{{ current.customer.contactPerson }}</span>
+            }
+
+            @if (current.customer.email) {
+              <a [href]="'mailto:' + current.customer.email">
+                {{ current.customer.email }}
+              </a>
+            }
+
+            @if (current.customer.phone) {
+              <a [href]="'tel:' + current.customer.phone">
+                {{ current.customer.phone }}
+              </a>
+            }
+          </div>
+        </section>
+
+        <section class="detail-card">
+          <div class="card-heading">
+            <h2>Work location</h2>
+          </div>
+
+          @if (
+            current.addressLine ||
+            current.postalCode ||
+            current.city
+          ) {
+            <address>
+              @if (current.addressLine) {
+                <span>{{ current.addressLine }}</span>
+              }
+
+              <span>
+                {{ current.postalCode }}
+                {{ current.city }}
+              </span>
+
+              <span>{{ current.countryCode }}</span>
+            </address>
+          } @else {
+            <p class="empty-value">No work location was provided.</p>
+          }
+        </section>
+
+        <section class="detail-card">
+          <div class="card-heading">
+            <h2>Internal notes</h2>
+          </div>
+
+          @if (current.notes) {
+            <p class="long-text">{{ current.notes }}</p>
+          } @else {
+            <p class="empty-value">No internal notes.</p>
+          }
+        </section>
+      </main>
+
+      <aside class="side-column">
+        <section class="detail-card">
+          <div class="card-heading">
+            <h2>Schedule</h2>
+          </div>
+
+          <dl class="information-list">
+            <div>
+              <dt>Start</dt>
+              <dd>
+                @if (current.scheduledStart) {
+                  {{ current.scheduledStart | date: 'dd/MM/yyyy HH:mm' }}
+                } @else {
+                  Not scheduled
+                }
+              </dd>
+            </div>
+
+            <div>
+              <dt>End</dt>
+              <dd>
+                @if (current.scheduledEnd) {
+                  {{ current.scheduledEnd | date: 'dd/MM/yyyy HH:mm' }}
+                } @else {
+                  Not scheduled
+                }
+              </dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="detail-card">
+          <div class="card-heading">
+            <h2>Assigned employees</h2>
+          </div>
+
+          @if (current.assignments.length > 0) {
+            <div class="assignment-list">
+              @for (
+                assignment of current.assignments;
+                track assignment.employee.id
+              ) {
+                <div class="assignment">
+                  <span class="employee-avatar">
+                    {{ assignment.employee.firstName.charAt(0) }}
+                    {{ assignment.employee.lastName.charAt(0) }}
+                  </span>
+
+                  <div>
+                    <strong>
+                      {{ assignment.employee.firstName }}
+                      {{ assignment.employee.lastName }}
+                    </strong>
+
+                    <small>
+                      {{ assignment.employee.jobTitle || 'Employee' }}
+
+                      @if (assignment.employee.employeeNumber) {
+                        · {{ assignment.employee.employeeNumber }}
+                      }
+                    </small>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="empty-value">No employees assigned.</p>
+          }
+        </section>
+
+        <section class="detail-card">
+          <div class="card-heading">
+            <h2>Record information</h2>
+          </div>
+
+          <dl class="information-list">
+            <div>
+              <dt>Created</dt>
+              <dd>{{ current.createdAt | date: 'dd/MM/yyyy HH:mm' }}</dd>
+            </div>
+
+            <div>
+              <dt>Last updated</dt>
+              <dd>{{ current.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</dd>
+            </div>
+          </dl>
+        </section>
+      </aside>
+    </div>
+  }
+</section>

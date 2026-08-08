@@ -1,0 +1,243 @@
+<section class="work-orders-page">
+  <header class="page-header">
+    <div>
+      <a class="back-link" routerLink="/dashboard">
+        ← Dashboard
+      </a>
+      <h1>Work orders</h1>
+      <p class="page-description">
+        Plan jobs, assign employees and follow their progress.
+      </p>
+    </div>
+
+    <a class="primary-button" routerLink="/work-orders/new">
+      New work order
+    </a>
+  </header>
+
+  <form class="filters" (ngSubmit)="applyFilters()">
+    <div class="filter-field search-field">
+      <label for="work-order-search">Search</label>
+
+      <input
+        id="work-order-search"
+        name="search"
+        type="search"
+        placeholder="Reference, title or customer"
+        [(ngModel)]="search"
+      />
+    </div>
+
+    <div class="filter-field">
+      <label for="work-order-status">Status</label>
+
+      <select
+        id="work-order-status"
+        name="status"
+        [(ngModel)]="status"
+      >
+        <option value="ALL">All statuses</option>
+        <option value="DRAFT">Draft</option>
+        <option value="PLANNED">Planned</option>
+        <option value="IN_PROGRESS">In progress</option>
+        <option value="COMPLETED">Completed</option>
+        <option value="CANCELLED">Cancelled</option>
+      </select>
+    </div>
+
+    <div class="filter-field">
+      <label for="work-order-priority">Priority</label>
+
+      <select
+        id="work-order-priority"
+        name="priority"
+        [(ngModel)]="priority"
+      >
+        <option value="ALL">All priorities</option>
+        <option value="LOW">Low</option>
+        <option value="NORMAL">Normal</option>
+        <option value="HIGH">High</option>
+        <option value="URGENT">Urgent</option>
+      </select>
+    </div>
+
+    <div class="filter-actions">
+      <button class="secondary-button" type="submit">
+        Apply filters
+      </button>
+
+      <button
+        class="text-button"
+        type="button"
+        (click)="resetFilters()"
+      >
+        Reset
+      </button>
+    </div>
+  </form>
+
+  @if (loading()) {
+    <div class="state-message" aria-live="polite">
+      Loading work orders...
+    </div>
+  } @else if (errorMessage()) {
+    <div class="state-message error-message" role="alert">
+      <p>{{ errorMessage() }}</p>
+
+      <button
+        class="secondary-button"
+        type="button"
+        (click)="loadWorkOrders()"
+      >
+        Try again
+      </button>
+    </div>
+  } @else if (workOrders().length === 0) {
+    <div class="state-message empty-state">
+      <h2>No work orders found</h2>
+      <p>Create your first work order or change the selected filters.</p>
+
+      <a class="primary-button" routerLink="/work-orders/new">
+        Create work order
+      </a>
+    </div>
+  } @else {
+    <div class="list-summary">
+      {{ pagination().total }}
+      {{ pagination().total === 1 ? 'work order' : 'work orders' }}
+      found
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Reference</th>
+            <th>Work order</th>
+            <th>Customer</th>
+            <th>Schedule</th>
+            <th>Employees</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>
+              <span class="visually-hidden">Actions</span>
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (workOrder of workOrders(); track workOrder.id) {
+            <tr>
+              <td class="reference">
+                {{ workOrder.reference }}
+              </td>
+
+              <td>
+                <strong>{{ workOrder.title }}</strong>
+
+                @if (workOrder.city) {
+                  <span class="secondary-text">
+                    {{ workOrder.city }}
+                  </span>
+                }
+              </td>
+
+              <td>
+                {{ workOrder.customer.name }}
+              </td>
+
+              <td>
+                @if (workOrder.scheduledStart) {
+                  <span>
+                    {{ workOrder.scheduledStart | date: 'dd/MM/yyyy HH:mm' }}
+                  </span>
+
+                  @if (workOrder.scheduledEnd) {
+                    <span class="secondary-text">
+                      Until
+                      {{ workOrder.scheduledEnd | date: 'dd/MM/yyyy HH:mm' }}
+                    </span>
+                  }
+                } @else {
+                  <span class="secondary-text">Not scheduled</span>
+                }
+              </td>
+
+              <td>
+                @if (workOrder.assignments.length > 0) {
+                  @for (
+                    assignment of workOrder.assignments;
+                    track assignment.employee.id
+                  ) {
+                    <span class="employee-name">
+                      {{ assignment.employee.firstName }}
+                      {{ assignment.employee.lastName }}
+                    </span>
+                  }
+                } @else {
+                  <span class="secondary-text">Not assigned</span>
+                }
+              </td>
+
+              <td>
+                <span
+                  class="priority-badge"
+                  [class]="'priority-badge priority-' +
+                    workOrder.priority.toLowerCase()"
+                >
+                  {{ priorityLabels[workOrder.priority] }}
+                </span>
+              </td>
+
+              <td>
+                <span
+                  class="status-badge"
+                  [class]="'status-badge status-' +
+                    workOrder.status.toLowerCase()"
+                >
+                  {{ statusLabels[workOrder.status] }}
+                </span>
+              </td>
+
+              <td>
+                <a
+                  class="row-action"
+                  [routerLink]="['/work-orders', workOrder.id]"
+                  [attr.aria-label]="'Open ' + workOrder.reference"
+                >
+                  View
+                </a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (pagination().totalPages > 1) {
+      <nav class="pagination" aria-label="Work order pages">
+        <button
+          type="button"
+          class="secondary-button"
+          [disabled]="pagination().page === 1"
+          (click)="previousPage()"
+        >
+          Previous
+        </button>
+
+        <span>
+          Page {{ pagination().page }} of {{ pagination().totalPages }}
+        </span>
+
+        <button
+          type="button"
+          class="secondary-button"
+          [disabled]="pagination().page === pagination().totalPages"
+          (click)="nextPage()"
+        >
+          Next
+        </button>
+      </nav>
+    }
+  }
+</section>

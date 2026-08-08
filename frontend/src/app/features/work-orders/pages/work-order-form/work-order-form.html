@@ -1,0 +1,339 @@
+<section class="work-order-form-page">
+  <header class="page-header">
+    <div>
+      <p class="page-eyebrow">Operations</p>
+
+      <h1>
+        {{ isEditMode() ? 'Edit work order' : 'New work order' }}
+      </h1>
+
+      <p>
+        @if (isEditMode()) {
+          Update the work order details, schedule and assignments.
+        } @else {
+          Create a job, schedule it and assign employees.
+        }
+      </p>
+    </div>
+
+    <button class="back-button" type="button" (click)="cancel()">
+      {{ isEditMode() ? 'Back to work order' : 'Back to work orders' }}
+    </button>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="error-message" role="alert">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (pageLoading()) {
+    <div class="loading-card" aria-live="polite">
+      <div class="spinner"></div>
+
+      <p>
+        {{
+          isEditMode()
+            ? 'Loading work order...'
+            : 'Loading customers and employees...'
+        }}
+      </p>
+    </div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <section class="form-card">
+        <div class="card-heading">
+          <h2>Work order details</h2>
+          <p>Select the customer and describe the required work.</p>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field full-width">
+            <label for="customerId">Customer *</label>
+
+            <select
+              id="customerId"
+              formControlName="customerId"
+              [class.invalid]="
+                form.controls.customerId.touched &&
+                form.controls.customerId.invalid
+              "
+            >
+              <option value="">Select a customer</option>
+
+              @for (customer of customers(); track customer.id) {
+                <option [value]="customer.id">
+                  {{ customer.name }}
+                </option>
+              }
+            </select>
+
+            @if (
+              form.controls.customerId.touched &&
+              form.controls.customerId.hasError('required')
+            ) {
+              <small class="field-error">Customer is required.</small>
+            }
+
+            @if (customers().length === 0) {
+              <small class="field-help">
+                No active customers are available. Create a customer first.
+              </small>
+            }
+          </div>
+
+          <div class="form-field full-width">
+            <label for="title">Title *</label>
+
+            <input
+              id="title"
+              type="text"
+              formControlName="title"
+              placeholder="Example: Weekly office cleaning"
+              [class.invalid]="
+                form.controls.title.touched &&
+                form.controls.title.invalid
+              "
+            />
+
+            @if (
+              form.controls.title.touched &&
+              form.controls.title.hasError('required')
+            ) {
+              <small class="field-error">Title is required.</small>
+            }
+
+            @if (
+              form.controls.title.touched &&
+              form.controls.title.hasError('minlength')
+            ) {
+              <small class="field-error">
+                Title must contain at least two characters.
+              </small>
+            }
+          </div>
+
+          <div class="form-field full-width">
+            <label for="description">Description</label>
+
+            <textarea
+              id="description"
+              formControlName="description"
+              rows="4"
+              placeholder="Describe the work that needs to be completed"
+            ></textarea>
+          </div>
+
+          @if (isEditMode()) {
+            <div class="form-field">
+              <label>Current status</label>
+
+              <div class="current-status">
+                {{ statusLabels[form.controls.status.value] }}
+              </div>
+
+              <small class="field-help">
+                Change the status from the Work Order detail page.
+              </small>
+            </div>
+          } @else {
+            <div class="form-field">
+              <label for="status">Initial status *</label>
+
+              <select id="status" formControlName="status">
+                <option value="DRAFT">Draft</option>
+                <option value="PLANNED">Planned</option>
+              </select>
+
+              <small class="field-help">
+                Planned work requires a start and end time.
+              </small>
+            </div>
+          }
+
+          <div class="form-field">
+            <label for="priority">Priority *</label>
+
+            <select id="priority" formControlName="priority">
+              <option value="LOW">Low</option>
+              <option value="NORMAL">Normal</option>
+              <option value="HIGH">High</option>
+              <option value="URGENT">Urgent</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-card">
+        <div class="card-heading">
+          <h2>Schedule</h2>
+          <p>
+            Draft work can remain unscheduled. Other active statuses require
+            both times.
+          </p>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="scheduledStart">Start date and time</label>
+
+            <input
+              id="scheduledStart"
+              type="datetime-local"
+              formControlName="scheduledStart"
+            />
+          </div>
+
+          <div class="form-field">
+            <label for="scheduledEnd">End date and time</label>
+
+            <input
+              id="scheduledEnd"
+              type="datetime-local"
+              formControlName="scheduledEnd"
+            />
+          </div>
+        </div>
+      </section>
+
+      <section class="form-card">
+        <div class="card-heading">
+          <h2>Work location</h2>
+          <p>
+            Leave the location empty when creating a work order to use the
+            customer's address.
+          </p>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field full-width">
+            <label for="addressLine">Address</label>
+
+            <input
+              id="addressLine"
+              type="text"
+              formControlName="addressLine"
+              placeholder="Street and number"
+            />
+          </div>
+
+          <div class="form-field">
+            <label for="postalCode">Postal code</label>
+
+            <input
+              id="postalCode"
+              type="text"
+              formControlName="postalCode"
+              placeholder="3630"
+            />
+          </div>
+
+          <div class="form-field">
+            <label for="city">City</label>
+
+            <input
+              id="city"
+              type="text"
+              formControlName="city"
+              placeholder="Maasmechelen"
+            />
+          </div>
+
+          <div class="form-field country-field">
+            <label for="countryCode">Country code *</label>
+
+            <input
+              id="countryCode"
+              type="text"
+              formControlName="countryCode"
+              maxlength="2"
+            />
+          </div>
+        </div>
+      </section>
+
+      <section class="form-card">
+        <div class="card-heading">
+          <h2>Assigned employees</h2>
+          <p>Select the employees responsible for this work order.</p>
+        </div>
+
+        @if (employees().length === 0) {
+          <p class="empty-message">No active employees are available.</p>
+        } @else {
+          <div class="employee-grid">
+            @for (employee of employees(); track employee.id) {
+              <label class="employee-option">
+                <input
+                  type="checkbox"
+                  [checked]="isEmployeeSelected(employee.id)"
+                  (change)="
+                    toggleEmployee(
+                      employee.id,
+                      $any($event.target).checked
+                    )
+                  "
+                />
+
+                <span class="employee-details">
+                  <strong>
+                    {{ employee.firstName }} {{ employee.lastName }}
+                  </strong>
+
+                  <small>
+                    {{ employee.jobTitle || 'Employee' }}
+
+                    @if (employee.employeeNumber) {
+                      · {{ employee.employeeNumber }}
+                    }
+                  </small>
+                </span>
+              </label>
+            }
+          </div>
+        }
+      </section>
+
+      <section class="form-card">
+        <div class="card-heading">
+          <h2>Internal notes</h2>
+          <p>These notes are intended for your team.</p>
+        </div>
+
+        <div class="form-field">
+          <label for="notes">Notes</label>
+
+          <textarea
+            id="notes"
+            formControlName="notes"
+            rows="4"
+            placeholder="Access instructions, materials or special requirements"
+          ></textarea>
+        </div>
+      </section>
+
+      <footer class="form-actions">
+        <button
+          class="secondary-button"
+          type="button"
+          [disabled]="saving()"
+          (click)="cancel()"
+        >
+          Cancel
+        </button>
+
+        <button
+          class="primary-button"
+          type="submit"
+          [disabled]="saving()"
+        >
+          @if (saving()) {
+            {{ isEditMode() ? 'Saving...' : 'Creating...' }}
+          } @else {
+            {{ isEditMode() ? 'Save changes' : 'Create work order' }}
+          }
+        </button>
+      </footer>
+    </form>
+  }
+</section>
