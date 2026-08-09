@@ -14,6 +14,7 @@ import { customerRouter } from './modules/customer/customer.routes.js';
 import { employeeRouter } from './modules/employee/employee.routes.js';
 import { planningRouter } from './modules/planning/planning.routes.js';
 import { workOrderRouter } from './modules/work-order/work-order.routes.js';
+import { dashboardRouter } from './modules/dashboard/dashboard.routes.js';
 
 export const app = express();
 
@@ -55,6 +56,7 @@ app.use('/api/customers', customerRouter);
 app.use('/api/employees', employeeRouter);
 app.use('/api/work-orders', workOrderRouter);
 app.use('/api/planning', planningRouter);
+app.use('/api/dashboard', dashboardRouter);
 
 app.get('/api/health', async (_request: Request, response: Response) => {
   try {
