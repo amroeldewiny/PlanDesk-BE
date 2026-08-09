@@ -114,7 +114,15 @@ export const routes: Routes = [
       ).then((component) => component.WorkOrderList),
     title: 'Work Orders | PlanDesk BE',
   },
-
+  {
+    path: 'planning',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import(
+        './features/planning/pages/planning-board/planning-board'
+      ).then((component) => component.PlanningBoard),
+    title: 'Planning | PlanDesk BE',
+  },
   {
     path: '',
     pathMatch: 'full',

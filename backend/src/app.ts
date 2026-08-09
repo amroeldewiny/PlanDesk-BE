@@ -7,33 +7,44 @@ import express, {
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 
-import { prisma } from './config/database.js';
 import { AppError } from './common/errors/app-error.js';
+import { prisma } from './config/database.js';
 import { authRouter } from './modules/auth/auth.routes.js';
 import { customerRouter } from './modules/customer/customer.routes.js';
 import { employeeRouter } from './modules/employee/employee.routes.js';
+import { planningRouter } from './modules/planning/planning.routes.js';
 import { workOrderRouter } from './modules/work-order/work-order.routes.js';
 
 export const app = express();
+
+/**
+ * CORS runs before rate limiting and routes so browser preflight
+ * requests always receive the correct access-control headers.
+ */
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL ?? 'http://localhost:4200',
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  }),
+);
 
 app.use(helmet());
 
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
-    limit: 100,
+    limit: process.env.NODE_ENV === 'production' ? 100 : 1000,
     standardHeaders: 'draft-8',
     legacyHeaders: false,
+
+    // Browser preflight requests should not consume the API limit.
+    skip: (request) => request.method === 'OPTIONS',
+
     message: {
       success: false,
       message: 'Too many requests. Please try again later.',
     },
-  }),
-);
-
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL ?? 'http://localhost:4200',
   }),
 );
 
@@ -43,6 +54,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/customers', customerRouter);
 app.use('/api/employees', employeeRouter);
 app.use('/api/work-orders', workOrderRouter);
+app.use('/api/planning', planningRouter);
 
 app.get('/api/health', async (_request: Request, response: Response) => {
   try {

@@ -1,0 +1,324 @@
+<section class="planning-page">
+  <header class="page-header">
+    <div>
+      <p class="page-eyebrow">Operations</p>
+      <h1>Planning</h1>
+      <p>Manage scheduled and unscheduled Work Orders.</p>
+    </div>
+
+    @if (planning(); as planningData) {
+      <div class="planning-totals">
+        <span>
+          <strong>{{ planningData.totals.scheduled }}</strong>
+          scheduled
+        </span>
+
+        <span>
+          <strong>{{ planningData.totals.unscheduled }}</strong>
+          unscheduled
+        </span>
+      </div>
+    }
+  </header>
+
+  <section class="week-toolbar">
+    <div class="week-navigation">
+      <button type="button" (click)="previousWeek()">
+        ← Previous
+      </button>
+
+      <button
+        type="button"
+        [disabled]="isCurrentWeek()"
+        (click)="goToCurrentWeek()"
+      >
+        Today
+      </button>
+
+      <button type="button" (click)="nextWeek()">
+        Next →
+      </button>
+    </div>
+
+    <h2>{{ weekLabel() }}</h2>
+  </section>
+
+  <form class="filters" (ngSubmit)="applyFilters()">
+    <div class="filter-field">
+      <label for="planning-customer">Customer</label>
+
+      <select
+        id="planning-customer"
+        name="customerId"
+        [(ngModel)]="selectedCustomerId"
+        [disabled]="optionsLoading()"
+      >
+        <option value="">All customers</option>
+
+        @for (customer of customers(); track customer.id) {
+          <option [value]="customer.id">
+            {{ customer.name }}
+          </option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-field">
+      <label for="planning-employee">Employee</label>
+
+      <select
+        id="planning-employee"
+        name="employeeId"
+        [(ngModel)]="selectedEmployeeId"
+        [disabled]="optionsLoading()"
+      >
+        <option value="">All employees</option>
+
+        @for (employee of employees(); track employee.id) {
+          <option [value]="employee.id">
+            {{ employee.firstName }} {{ employee.lastName }}
+          </option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-field">
+      <label for="planning-status">Status</label>
+
+      <select
+        id="planning-status"
+        name="status"
+        [(ngModel)]="selectedStatus"
+      >
+        <option value="ALL">All statuses</option>
+        <option value="DRAFT">Draft</option>
+        <option value="PLANNED">Planned</option>
+        <option value="IN_PROGRESS">In progress</option>
+        <option value="COMPLETED">Completed</option>
+        <option value="CANCELLED">Cancelled</option>
+      </select>
+    </div>
+
+    <div class="filter-actions">
+      <button class="apply-button" type="submit">
+        Apply
+      </button>
+
+      <button
+        class="reset-button"
+        type="button"
+        (click)="resetFilters()"
+      >
+        Reset
+      </button>
+    </div>
+  </form>
+
+  @if (errorMessage()) {
+    <div class="message error-message" role="alert">
+      <span>{{ errorMessage() }}</span>
+
+      <button type="button" (click)="loadPlanning()">
+        Try again
+      </button>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="refresh-message" aria-live="polite">
+      <span class="small-spinner"></span>
+      Loading planning...
+    </div>
+  }
+
+  @if (planning(); as planningData) {
+    <div class="planning-layout">
+      <main class="calendar-container">
+        <div class="week-grid">
+          @for (day of weekDays(); track day.dateKey) {
+            <section
+              class="day-column"
+              [class.today]="day.isToday"
+            >
+              <header class="day-header">
+                <div>
+                  <span class="day-name">
+                    {{ day.date | date: 'EEE' }}
+                  </span>
+
+                  <strong>
+                    {{ day.date | date: 'd MMM' }}
+                  </strong>
+                </div>
+
+                <span class="day-count">
+                  {{ day.workOrders.length }}
+                </span>
+              </header>
+
+              <div class="day-content">
+                @if (day.workOrders.length === 0) {
+                  <div class="empty-day">
+                    No work scheduled
+                  </div>
+                } @else {
+                  @for (
+                    workOrder of day.workOrders;
+                    track workOrder.id
+                  ) {
+                    <a
+                      class="work-card"
+                      [attr.data-status]="workOrder.status"
+                      [routerLink]="[
+                        '/work-orders',
+                        workOrder.id
+                      ]"
+                    >
+                      <div class="card-topline">
+                        <span class="reference">
+                          {{ workOrder.reference }}
+                        </span>
+
+                        <span
+                          [class]="'priority-badge priority-' +
+                            workOrder.priority.toLowerCase()"
+                        >
+                          {{ priorityLabels[workOrder.priority] }}
+                        </span>
+                      </div>
+
+                      <strong class="work-title">
+                        {{ workOrder.title }}
+                      </strong>
+
+                      <span class="customer-name">
+                        {{ workOrder.customer.name }}
+                      </span>
+
+                      <div class="schedule-time">
+                        <span>
+                          {{
+                            workOrder.scheduledStart
+                              | date: 'HH:mm'
+                          }}
+                        </span>
+
+                        <span>→</span>
+
+                        <span>
+                          {{
+                            workOrder.scheduledEnd
+                              | date: 'HH:mm'
+                          }}
+                        </span>
+                      </div>
+
+                      @if (workOrder.city) {
+                        <span class="location">
+                          {{ workOrder.city }}
+                        </span>
+                      }
+
+                      <div class="card-footer">
+                        <span
+                          [class]="'status-badge status-' +
+                            workOrder.status.toLowerCase()"
+                        >
+                          {{ statusLabels[workOrder.status] }}
+                        </span>
+
+                        <span class="assignment-count">
+                          {{ workOrder.assignments.length }}
+                          {{
+                            workOrder.assignments.length === 1
+                              ? 'employee'
+                              : 'employees'
+                          }}
+                        </span>
+                      </div>
+                    </a>
+                  }
+                }
+              </div>
+            </section>
+          }
+        </div>
+      </main>
+
+      <aside class="unscheduled-panel">
+        <header>
+          <div>
+            <p class="panel-eyebrow">Waiting list</p>
+            <h2>Unscheduled</h2>
+          </div>
+
+          <span>{{ planningData.totals.unscheduled }}</span>
+        </header>
+
+        <p class="panel-description">
+          Draft Work Orders waiting for a complete schedule.
+        </p>
+
+        <div class="unscheduled-list">
+          @if (unscheduledWorkOrders().length === 0) {
+            <div class="empty-unscheduled">
+              Everything is scheduled.
+            </div>
+          } @else {
+            @for (
+              workOrder of unscheduledWorkOrders();
+              track workOrder.id
+            ) {
+              <a
+                class="unscheduled-card"
+                [routerLink]="[
+                  '/work-orders',
+                  workOrder.id
+                ]"
+              >
+                <div class="card-topline">
+                  <span class="reference">
+                    {{ workOrder.reference }}
+                  </span>
+
+                  <span
+                    [class]="'priority-badge priority-' +
+                      workOrder.priority.toLowerCase()"
+                  >
+                    {{ priorityLabels[workOrder.priority] }}
+                  </span>
+                </div>
+
+                <strong>{{ workOrder.title }}</strong>
+                <span>{{ workOrder.customer.name }}</span>
+
+                <small>
+                  {{ workOrder.assignments.length }}
+                  {{
+                    workOrder.assignments.length === 1
+                      ? 'employee assigned'
+                      : 'employees assigned'
+                  }}
+                </small>
+              </a>
+            }
+
+            @if (
+              planningData.totals.unscheduled >
+              unscheduledWorkOrders().length
+            ) {
+              <p class="limited-message">
+                Showing {{ unscheduledWorkOrders().length }} of
+                {{ planningData.totals.unscheduled }} Work Orders.
+              </p>
+            }
+          }
+        </div>
+      </aside>
+    </div>
+  } @else if (!loading()) {
+    <div class="initial-state">
+      Planning data is unavailable.
+    </div>
+  }
+</section>
