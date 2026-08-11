@@ -13,12 +13,19 @@ import {
   update,
 } from './employee.controller.js';
 
+import {
+  authorizeRoles,
+  COMPANY_MANAGEMENT_ROLES,
+} from '../../middleware/role.middleware.js';
+
 export const employeeRouter = Router();
 
 employeeRouter.use(
   authenticate,
+  authorizeRoles(...COMPANY_MANAGEMENT_ROLES),
   requireCompanyContext,
 );
+
 
 employeeRouter.get('/', list);
 employeeRouter.post('/', create);

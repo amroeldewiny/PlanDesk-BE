@@ -1,0 +1,279 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  color: #172033;
+  background: #f4f7fb;
+  font-family:
+    Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
+}
+
+.app-shell {
+  display: grid;
+  min-height: 100vh;
+  grid-template-columns: 250px minmax(0, 1fr);
+}
+
+.sidebar {
+  display: flex;
+  position: sticky;
+  z-index: 30;
+  top: 0;
+  flex-direction: column;
+  height: 100vh;
+  padding: 28px 20px;
+  box-sizing: border-box;
+  color: #dfe7fb;
+  background: #0c1d40;
+}
+
+.logo {
+  display: flex;
+  gap: 11px;
+  align-items: center;
+  padding: 0 10px;
+  color: #fff;
+  font-weight: 800;
+}
+
+.logo-mark {
+  display: grid;
+  width: 35px;
+  height: 35px;
+  color: #fff;
+  background: #246bfd;
+  border-radius: 10px;
+  place-items: center;
+}
+
+nav {
+  display: grid;
+  gap: 6px;
+  margin-top: 48px;
+
+  a {
+    display: flex;
+    gap: 13px;
+    align-items: center;
+    padding: 13px 14px;
+    color: #aebbd6;
+    text-decoration: none;
+    border-radius: 10px;
+
+    &:hover,
+    &.active {
+      color: #fff;
+      background: #1a356b;
+    }
+  }
+}
+
+.sidebar-footer {
+  display: grid;
+  gap: 16px;
+  margin-top: auto;
+}
+
+.sidebar-user {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  background: #132b59;
+  border-radius: 10px;
+
+  div {
+    display: grid;
+    min-width: 0;
+  }
+
+  strong,
+  small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  small {
+    margin-top: 3px;
+    color: #9eacd0;
+    font-size: 0.65rem;
+  }
+}
+
+.small-avatar,
+.avatar {
+  display: grid;
+  flex: 0 0 auto;
+  color: #fff;
+  font-weight: 800;
+  background: #246bfd;
+  border-radius: 50%;
+  place-items: center;
+}
+
+.small-avatar {
+  width: 34px;
+  height: 34px;
+  font-size: 0.72rem;
+}
+
+.logout-button {
+  min-height: 42px;
+  color: #dfe7fb;
+  font: inherit;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid #38517d;
+  border-radius: 9px;
+}
+
+.shell-content {
+  min-width: 0;
+}
+
+.shell-header {
+  display: flex;
+  position: sticky;
+  z-index: 20;
+  top: 0;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 74px;
+  padding: 0 40px;
+  background: rgb(255 255 255 / 95%);
+  border-bottom: 1px solid #e1e7ef;
+  backdrop-filter: blur(8px);
+}
+
+.company-heading,
+.header-user > div {
+  display: grid;
+}
+
+.company-heading span,
+.header-user span {
+  color: #718096;
+  font-size: 0.72rem;
+}
+
+.header-user {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+
+  > div {
+    text-align: right;
+  }
+}
+
+.avatar {
+  width: 41px;
+  height: 41px;
+}
+
+.menu-button {
+  display: none;
+  width: 42px;
+  height: 42px;
+  color: #172033;
+  font-size: 1.25rem;
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid #ccd5e3;
+  border-radius: 9px;
+}
+
+.page-content {
+  min-width: 0;
+}
+
+.menu-backdrop {
+  display: none;
+}
+
+.loading-state,
+.error-state {
+  display: grid;
+  min-height: 100vh;
+  padding: 30px;
+  color: #718096;
+  text-align: center;
+  place-items: center;
+}
+
+.spinner {
+  display: block;
+  width: 38px;
+  height: 38px;
+  margin: auto;
+  border: 4px solid #dfe7f5;
+  border-top-color: #246bfd;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.error-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+
+  button {
+    padding: 11px 16px;
+    font: inherit;
+    cursor: pointer;
+    background: #fff;
+    border: 1px solid #ccd5e3;
+    border-radius: 8px;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 760px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 0;
+    width: 250px;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+
+    &.open {
+      transform: translateX(0);
+    }
+  }
+
+  .menu-backdrop {
+    display: block;
+    position: fixed;
+    z-index: 25;
+    inset: 0;
+    cursor: pointer;
+    background: rgb(8 20 45 / 55%);
+    border: 0;
+  }
+
+  .shell-header {
+    padding: 0 18px;
+  }
+
+  .menu-button {
+    display: block;
+  }
+
+  .company-heading {
+    display: none;
+  }
+
+  .header-user > div {
+    display: none;
+  }
+}

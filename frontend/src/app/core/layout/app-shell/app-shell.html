@@ -1,0 +1,150 @@
+@if (isLoading()) {
+  <div class="loading-state">
+    <div>
+      <span class="spinner"></span>
+      <p>Loading your workspace...</p>
+    </div>
+  </div>
+} @else if (errorMessage()) {
+  <div class="error-state">
+    <div>
+      <h1>Unable to load your workspace</h1>
+      <p>{{ errorMessage() }}</p>
+
+      <div class="error-actions">
+        <button type="button" (click)="loadCurrentUser()">
+          Try again
+        </button>
+
+        <button type="button" (click)="logout()">
+          Log out
+        </button>
+      </div>
+    </div>
+  </div>
+} @else {
+  <div class="app-shell">
+    <aside class="sidebar" [class.open]="menuOpen()">
+      <div class="logo">
+        <span class="logo-mark">P</span>
+        <span>PlanDesk BE</span>
+      </div>
+
+      <nav>
+        <a
+          routerLink="/dashboard"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          (click)="closeMenu()"
+        >
+          <span>▦</span>
+          Dashboard
+        </a>
+
+        <a
+          routerLink="/planning"
+          routerLinkActive="active"
+          (click)="closeMenu()"
+        >
+          <span>▣</span>
+          Planning
+        </a>
+
+        <a
+          routerLink="/work-orders"
+          routerLinkActive="active"
+          (click)="closeMenu()"
+        >
+          <span>✓</span>
+          Work orders
+        </a>
+
+        <a
+          routerLink="/customers"
+          routerLinkActive="active"
+          (click)="closeMenu()"
+        >
+          <span>♙</span>
+          Customers
+        </a>
+
+        <a
+          routerLink="/employees"
+          routerLinkActive="active"
+          (click)="closeMenu()"
+        >
+          <span>♟</span>
+          Employees
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <span class="small-avatar">{{ initials() }}</span>
+
+          <div>
+            <strong>
+              {{ currentUser()?.firstName }}
+              {{ currentUser()?.lastName }}
+            </strong>
+
+            <small>{{ roleLabel() }}</small>
+          </div>
+        </div>
+
+        <button
+          class="logout-button"
+          type="button"
+          (click)="logout()"
+        >
+          Log out
+        </button>
+      </div>
+    </aside>
+
+    @if (menuOpen()) {
+      <button
+        class="menu-backdrop"
+        type="button"
+        aria-label="Close navigation"
+        (click)="closeMenu()"
+      ></button>
+    }
+
+    <div class="shell-content">
+      <header class="shell-header">
+        <button
+          class="menu-button"
+          type="button"
+          aria-label="Open navigation"
+          [attr.aria-expanded]="menuOpen()"
+          (click)="toggleMenu()"
+        >
+          ☰
+        </button>
+
+        <div class="company-heading">
+          <span>Workspace</span>
+          <strong>{{ currentCompany()?.name }}</strong>
+        </div>
+
+        <div class="header-user">
+          <div>
+            <strong>
+              {{ currentUser()?.firstName }}
+              {{ currentUser()?.lastName }}
+            </strong>
+
+            <span>{{ roleLabel() }}</span>
+          </div>
+
+          <span class="avatar">{{ initials() }}</span>
+        </div>
+      </header>
+
+      <main class="page-content">
+        <router-outlet />
+      </main>
+    </div>
+  </div>
+}

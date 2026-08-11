@@ -1,314 +1,261 @@
 @if (isLoading()) {
-  <div class="loading-state">
+  <div class="dashboard-state">
     <div>
       <span class="spinner"></span>
-      <p>Loading your workspace...</p>
+      <p>Loading dashboard...</p>
     </div>
   </div>
 } @else if (errorMessage()) {
-  <div class="error-state">
+  <div class="dashboard-state error-state">
     <div>
       <h1>Unable to load the dashboard</h1>
       <p>{{ errorMessage() }}</p>
 
-      <div class="error-actions">
-        <button type="button" (click)="loadDashboard()">
-          Try again
-        </button>
-
-        <button type="button" (click)="logout()">
-          Log out
-        </button>
-      </div>
+      <button type="button" (click)="loadDashboard()">
+        Try again
+      </button>
     </div>
   </div>
 } @else if (summary(); as dashboard) {
-  <div class="dashboard-layout">
-    <aside class="sidebar">
-      <div class="logo">
-        <span class="logo-mark">P</span>
-        <span>PlanDesk BE</span>
+  <section class="dashboard-page">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Business overview</p>
+        <h1>Dashboard</h1>
+        <p>
+          Live operational information for
+          {{ currentCompany()?.name }}.
+        </p>
       </div>
 
-      <nav>
-        <a
-          routerLink="/dashboard"
-          routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: true }"
-        >
-          <span>▦</span>
-          Dashboard
-        </a>
-
-        <a routerLink="/planning" routerLinkActive="active">
-          <span>▣</span>
-          Planning
-        </a>
-
-        <a routerLink="/work-orders" routerLinkActive="active">
-          <span>✓</span>
-          Work orders
-        </a>
-
-        <a routerLink="/customers" routerLinkActive="active">
-          <span>♙</span>
-          Customers
-        </a>
-
-        <a routerLink="/employees" routerLinkActive="active">
-          <span>♟</span>
-          Employees
-        </a>
-      </nav>
-
       <button
-        class="logout-button"
+        class="refresh-button"
         type="button"
-        (click)="logout()"
+        (click)="loadDashboard()"
       >
-        Log out
+        Refresh
       </button>
-    </aside>
+    </header>
 
-    <main class="main-content">
-      <header class="topbar">
+    <section class="welcome-panel">
+      <div>
+        <p class="eyebrow">Good to see you</p>
+
+        <h2>
+          Welcome back, {{ currentUser()?.firstName }}
+        </h2>
+
+        <p>
+          Here is the current overview of your business operations.
+        </p>
+      </div>
+
+      <a routerLink="/work-orders/new">
+        + Create work order
+      </a>
+    </section>
+
+    <section class="stats-grid">
+      <article class="stat-card">
+        <div class="stat-icon blue">✓</div>
+
         <div>
-          <p class="eyebrow">Workspace</p>
-          <h1>{{ currentCompany()?.name }}</h1>
+          <span>Active work orders</span>
+          <strong>{{ dashboard.workOrders.active }}</strong>
+          <small>
+            {{ dashboard.workOrders.total }} total Work Orders
+          </small>
         </div>
+      </article>
 
-        <div class="user-profile">
-          <div class="user-details">
-            <strong>
-              {{ currentUser()?.firstName }}
-              {{ currentUser()?.lastName }}
-            </strong>
+      <article class="stat-card">
+        <div class="stat-icon purple">♟</div>
 
-            <span>{{ currentUser()?.role }}</span>
-          </div>
-
-          <div class="avatar">{{ initials() }}</div>
-        </div>
-      </header>
-
-      <section class="welcome-panel">
         <div>
-          <p class="eyebrow">Good to see you</p>
+          <span>Active employees</span>
+          <strong>{{ dashboard.employees.active }}</strong>
+          <small>Available company employees</small>
+        </div>
+      </article>
 
-          <h2>
-            Welcome back, {{ currentUser()?.firstName }}
-          </h2>
+      <article class="stat-card">
+        <div class="stat-icon green">▣</div>
 
-          <p>
-            Here is the current overview of your business operations.
-          </p>
+        <div>
+          <span>Upcoming jobs</span>
+          <strong>
+            {{ dashboard.workOrders.upcomingSevenDays }}
+          </strong>
+          <small>Within the next seven days</small>
+        </div>
+      </article>
+
+      <article class="stat-card">
+        <div class="stat-icon orange">♙</div>
+
+        <div>
+          <span>Active customers</span>
+          <strong>{{ dashboard.customers.active }}</strong>
+          <small>Current customer records</small>
+        </div>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <article class="content-card">
+        <div class="card-heading">
+          <div>
+            <p class="eyebrow">Operations</p>
+            <h2>Work Order overview</h2>
+          </div>
+
+          <a class="text-button" routerLink="/planning">
+            View planning
+          </a>
         </div>
 
-        <a routerLink="/work-orders/new">
-          + Create work order
-        </a>
-      </section>
-
-      <section class="stats-grid">
-        <article class="stat-card">
-          <div class="stat-icon blue">✓</div>
+        <div class="status-grid">
+          <div>
+            <span>Draft</span>
+            <strong>{{ dashboard.workOrders.draft }}</strong>
+          </div>
 
           <div>
-            <span>Active work orders</span>
-            <strong>{{ dashboard.workOrders.active }}</strong>
-            <small>
-              {{ dashboard.workOrders.total }} total Work Orders
-            </small>
+            <span>Planned</span>
+            <strong>{{ dashboard.workOrders.planned }}</strong>
           </div>
-        </article>
-
-        <article class="stat-card">
-          <div class="stat-icon purple">♟</div>
 
           <div>
-            <span>Active employees</span>
-            <strong>{{ dashboard.employees.active }}</strong>
-            <small>Available company employees</small>
+            <span>In progress</span>
+            <strong>{{ dashboard.workOrders.inProgress }}</strong>
           </div>
-        </article>
-
-        <article class="stat-card">
-          <div class="stat-icon green">▣</div>
 
           <div>
-            <span>Upcoming jobs</span>
-            <strong>
-              {{ dashboard.workOrders.upcomingSevenDays }}
-            </strong>
-            <small>Within the next seven days</small>
+            <span>Completed</span>
+            <strong>{{ dashboard.workOrders.completed }}</strong>
           </div>
-        </article>
+        </div>
 
-        <article class="stat-card">
-          <div class="stat-icon orange">♙</div>
+        <div class="operational-alerts">
+          <a routerLink="/planning">
+            <span class="alert-icon orange">!</span>
 
+            <div>
+              <strong>
+                {{ dashboard.workOrders.unscheduled }}
+                unscheduled
+              </strong>
+
+              <small>Work Orders waiting for planning</small>
+            </div>
+          </a>
+
+          <a routerLink="/work-orders">
+            <span class="alert-icon red">!</span>
+
+            <div>
+              <strong>
+                {{ dashboard.workOrders.overdue }}
+                overdue
+              </strong>
+
+              <small>Work Orders requiring attention</small>
+            </div>
+          </a>
+        </div>
+      </article>
+
+      <article class="content-card">
+        <div class="card-heading">
           <div>
-            <span>Active customers</span>
-            <strong>{{ dashboard.customers.active }}</strong>
-            <small>Current customer records</small>
-          </div>
-        </article>
-      </section>
-
-      <section class="content-grid">
-        <article class="content-card">
-          <div class="card-heading">
-            <div>
-              <p class="eyebrow">Operations</p>
-              <h3>Work Order overview</h3>
-            </div>
-
-            <a class="text-button" routerLink="/planning">
-              View planning
-            </a>
+            <p class="eyebrow">Activity</p>
+            <h2>Recent Work Orders</h2>
           </div>
 
-          <div class="status-grid">
-            <div>
-              <span>Draft</span>
-              <strong>{{ dashboard.workOrders.draft }}</strong>
-            </div>
+          <a class="text-button" routerLink="/work-orders">
+            View all
+          </a>
+        </div>
 
-            <div>
-              <span>Planned</span>
-              <strong>{{ dashboard.workOrders.planned }}</strong>
-            </div>
-
-            <div>
-              <span>In progress</span>
-              <strong>{{ dashboard.workOrders.inProgress }}</strong>
-            </div>
-
-            <div>
-              <span>Completed</span>
-              <strong>{{ dashboard.workOrders.completed }}</strong>
-            </div>
+        @if (dashboard.recentWorkOrders.length === 0) {
+          <div class="empty-state">
+            <div class="empty-icon">▦</div>
+            <h3>No Work Orders yet</h3>
+            <p>Create your first Work Order to begin.</p>
           </div>
-
-          <div class="operational-alerts">
-            <a routerLink="/planning">
-              <span class="alert-icon orange">!</span>
-
-              <div>
-                <strong>
-                  {{ dashboard.workOrders.unscheduled }}
-                  unscheduled
-                </strong>
-                <small>Work Orders waiting for planning</small>
-              </div>
-            </a>
-
-            <a routerLink="/work-orders">
-              <span class="alert-icon red">!</span>
-
-              <div>
-                <strong>
-                  {{ dashboard.workOrders.overdue }}
-                  overdue
-                </strong>
-                <small>Work Orders requiring attention</small>
-              </div>
-            </a>
-          </div>
-        </article>
-
-        <article class="content-card">
-          <div class="card-heading">
-            <div>
-              <p class="eyebrow">Activity</p>
-              <h3>Recent Work Orders</h3>
-            </div>
-
-            <a class="text-button" routerLink="/work-orders">
-              View all
-            </a>
-          </div>
-
-          @if (dashboard.recentWorkOrders.length === 0) {
-            <div class="empty-state">
-              <div class="empty-icon">▦</div>
-              <h4>No Work Orders yet</h4>
-              <p>Create your first Work Order to begin.</p>
-            </div>
-          } @else {
-            <div class="recent-list">
-              @for (
-                workOrder of dashboard.recentWorkOrders;
-                track workOrder.id
-              ) {
-                <a
-                  class="recent-work-order"
-                  [routerLink]="[
-                    '/work-orders',
-                    workOrder.id
-                  ]"
-                >
-                  <div class="recent-main">
-                    <div>
-                      <span class="reference">
-                        {{ workOrder.reference }}
-                      </span>
-
-                      <strong>{{ workOrder.title }}</strong>
-                      <small>{{ workOrder.customer.name }}</small>
-                    </div>
-
-                    <span
-                      [class]="'status-badge status-' +
-                        workOrder.status.toLowerCase()"
-                    >
-                      {{ statusLabels[workOrder.status] }}
+        } @else {
+          <div class="recent-list">
+            @for (
+              workOrder of dashboard.recentWorkOrders;
+              track workOrder.id
+            ) {
+              <a
+                class="recent-work-order"
+                [routerLink]="[
+                  '/work-orders',
+                  workOrder.id
+                ]"
+              >
+                <div class="recent-main">
+                  <div>
+                    <span class="reference">
+                      {{ workOrder.reference }}
                     </span>
+
+                    <strong>{{ workOrder.title }}</strong>
+                    <small>{{ workOrder.customer.name }}</small>
                   </div>
 
-                  <div class="recent-meta">
-                    @if (workOrder.scheduledStart) {
-                      <span>
-                        {{
-                          workOrder.scheduledStart
-                            | date: 'dd/MM/yyyy HH:mm'
-                        }}
-                      </span>
-                    } @else {
-                      <span>Not scheduled</span>
-                    }
+                  <span
+                    [class]="'status-badge status-' +
+                      workOrder.status.toLowerCase()"
+                  >
+                    {{ statusLabels[workOrder.status] }}
+                  </span>
+                </div>
 
+                <div class="recent-meta">
+                  @if (workOrder.scheduledStart) {
                     <span>
-                      {{ workOrder.assignedEmployeeCount }}
                       {{
-                        workOrder.assignedEmployeeCount === 1
-                          ? 'employee'
-                          : 'employees'
+                        workOrder.scheduledStart
+                          | date: 'dd/MM/yyyy HH:mm'
                       }}
                     </span>
-                  </div>
-                </a>
-              }
-            </div>
-          }
+                  } @else {
+                    <span>Not scheduled</span>
+                  }
 
-          <div class="company-information">
-            <div>
-              <span>Company</span>
-              <strong>{{ currentCompany()?.name }}</strong>
-
-              @if (currentCompany()?.vatNumber) {
-                <small>{{ currentCompany()?.vatNumber }}</small>
-              }
-            </div>
-
-            <small>
-              Updated
-              {{ dashboard.generatedAt | date: 'dd/MM/yyyy HH:mm' }}
-            </small>
+                  <span>
+                    {{ workOrder.assignedEmployeeCount }}
+                    {{
+                      workOrder.assignedEmployeeCount === 1
+                        ? 'employee'
+                        : 'employees'
+                    }}
+                  </span>
+                </div>
+              </a>
+            }
           </div>
-        </article>
-      </section>
-    </main>
-  </div>
+        }
+
+        <div class="company-information">
+          <div>
+            <span>Company</span>
+            <strong>{{ currentCompany()?.name }}</strong>
+
+            @if (currentCompany()?.vatNumber) {
+              <small>{{ currentCompany()?.vatNumber }}</small>
+            }
+          </div>
+
+          <small>
+            Updated
+            {{ dashboard.generatedAt | date: 'dd/MM/yyyy HH:mm' }}
+          </small>
+        </div>
+      </article>
+    </section>
+  </section>
 }
