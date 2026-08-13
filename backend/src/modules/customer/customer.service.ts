@@ -1,11 +1,11 @@
-import type { Prisma } from '../../generated/prisma/client.js';
-import { AppError } from '../../common/errors/app-error.js';
-import { prisma } from '../../config/database.js';
+import type { Prisma } from "../../generated/prisma/client.js";
+import { AppError } from "../../common/errors/app-error.js";
+import { prisma } from "../../config/database.js";
 import type {
   CreateCustomerInput,
   CustomerListQuery,
   UpdateCustomerInput,
-} from './customer.schema.js';
+} from "./customer.schema.js";
 
 const customerSelect = {
   id: true,
@@ -24,10 +24,7 @@ const customerSelect = {
   updatedAt: true,
 } satisfies Prisma.CustomerSelect;
 
-export const createCustomer = (
-  companyId: string,
-  input: CreateCustomerInput,
-) =>
+export const createCustomer = (companyId: string, input: CreateCustomerInput) =>
   prisma.customer.create({
     data: {
       ...input,
@@ -43,22 +40,20 @@ export const listCustomers = async (
 ) => {
   const where: Prisma.CustomerWhereInput = {
     companyId,
-    ...(query.status === 'all'
-      ? {}
-      : { isActive: query.status === 'active' }),
+    ...(query.status === "all" ? {} : { isActive: query.status === "active" }),
     ...(query.search
       ? {
           OR: [
-            { name: { contains: query.search, mode: 'insensitive' } },
+            { name: { contains: query.search, mode: "insensitive" } },
             {
               contactPerson: {
                 contains: query.search,
-                mode: 'insensitive',
+                mode: "insensitive",
               },
             },
-            { email: { contains: query.search, mode: 'insensitive' } },
-            { phone: { contains: query.search, mode: 'insensitive' } },
-            { vatNumber: { contains: query.search, mode: 'insensitive' } },
+            { email: { contains: query.search, mode: "insensitive" } },
+            { phone: { contains: query.search, mode: "insensitive" } },
+            { vatNumber: { contains: query.search, mode: "insensitive" } },
           ],
         }
       : {}),
@@ -69,7 +64,7 @@ export const listCustomers = async (
     prisma.customer.findMany({
       where,
       select: customerSelect,
-      orderBy: [{ name: 'asc' }, { createdAt: 'desc' }],
+      orderBy: [{ name: "asc" }, { createdAt: "desc" }],
       skip,
       take: query.limit,
     }),
@@ -97,7 +92,7 @@ export const getCustomer = async (companyId: string, customerId: string) => {
   });
 
   if (!customer) {
-    throw new AppError(404, 'Customer not found');
+    throw new AppError(404, "Customer not found");
   }
 
   return customer;
@@ -112,10 +107,7 @@ export const updateCustomer = async (
 
   return prisma.customer.update({
     where: { id: customerId },
-    data: {
-      ...input,
-      email: 'email' in input ? input.email || null : undefined,
-    },
+    data: input,
     select: customerSelect,
   });
 };
@@ -126,6 +118,7 @@ export const archiveCustomer = async (
 ) => {
   await getCustomer(companyId, customerId);
 
+  // Archiving preserves history and keeps linked work orders valid.
   return prisma.customer.update({
     where: { id: customerId },
     data: { isActive: false },

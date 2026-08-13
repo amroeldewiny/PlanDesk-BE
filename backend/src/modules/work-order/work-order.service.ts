@@ -60,6 +60,8 @@ const getCustomerForWorkOrder = async (
   companyId: string,
   customerId: string,
 ) => {
+  // Relations supplied by the client must be active and owned by the same
+  // company before they can become part of a work order.
   const customer = await transaction.customer.findFirst({
     where: {
       id: customerId,
@@ -123,6 +125,8 @@ const generateWorkOrderReference = async (
 ): Promise<string> => {
   const year = new Date().getUTCFullYear();
 
+  // The compound company/year key makes reference allocation atomic even when
+  // multiple users create work orders at the same time.
   const sequence = await transaction.workOrderSequence.upsert({
     where: {
       companyId_year: {
@@ -550,6 +554,8 @@ export const updateWorkOrder = async (
       data: updateData,
     });
 
+    // An explicitly supplied employeeIds array represents the complete desired
+    // assignment set. Omitting it leaves existing assignments untouched.
     if (employeeIds !== undefined) {
       await transaction.workOrderAssignment.deleteMany({
         where: {

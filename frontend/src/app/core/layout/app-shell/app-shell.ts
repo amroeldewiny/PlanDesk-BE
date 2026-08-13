@@ -1,28 +1,13 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import {
-  Component,
-  computed,
-  inject,
-  OnInit,
-  signal,
-} from '@angular/core';
-import {
-  Router,
-  RouterLink,
-  RouterLinkActive,
-  RouterOutlet,
-} from '@angular/router';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-app-shell',
-  imports: [
-    RouterLink,
-    RouterLinkActive,
-    RouterOutlet,
-  ],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet],
   templateUrl: './app-shell.html',
   styleUrl: './app-shell.scss',
 })
@@ -44,8 +29,7 @@ export class AppShell implements OnInit {
       return 'PD';
     }
 
-    return `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`
-      .toUpperCase();
+    return `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase();
   });
 
   protected readonly roleLabel = computed(() => {
@@ -53,6 +37,7 @@ export class AppShell implements OnInit {
   });
 
   ngOnInit(): void {
+    // A valid token is rechecked against /auth/me when the application reloads.
     if (this.currentUser() && this.currentCompany()) {
       this.isLoading.set(false);
       return;
@@ -75,10 +60,7 @@ export class AppShell implements OnInit {
             return;
           }
 
-          this.errorMessage.set(
-            error.error?.message ??
-              'Unable to load your workspace.',
-          );
+          this.errorMessage.set(error.error?.message ?? 'Unable to load your workspace.');
         },
       });
   }

@@ -6,6 +6,11 @@ const ACCESS_TOKEN_KEY = 'plandesk_access_token';
   providedIn: 'root',
 })
 export class TokenStorageService {
+  /**
+   * V1 stores the short-lived access token in localStorage so sessions survive
+   * reloads. A refresh-token release should move long-lived credentials to a
+   * Secure, HttpOnly, SameSite cookie.
+   */
   getAccessToken(): string | null {
     return localStorage.getItem(ACCESS_TOKEN_KEY);
   }

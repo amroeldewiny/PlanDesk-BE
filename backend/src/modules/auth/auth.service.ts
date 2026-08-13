@@ -5,10 +5,21 @@ import bcrypt from 'bcryptjs';
 import { AppError } from '../../common/errors/app-error.js';
 import { prisma } from '../../config/database.js';
 import { Prisma } from '../../generated/prisma/client.js';
-import type { LoginInput, RegisterInput } from './auth.schema.js';
+import type {
+  LoginInput,
+  RegisterInput,
+} from './auth.schema.js';
 import { createAccessToken } from './token.service.js';
 
-const createSlug = (companyName: string): string => {
+/**
+ * Creates a URL-friendly and unique company slug.
+ *
+ * The random suffix prevents companies with identical names from
+ * receiving the same unique database value.
+ */
+const createSlug = (
+  companyName: string,
+): string => {
   const normalizedName = companyName
     .toLowerCase()
     .trim()
@@ -19,80 +30,124 @@ const createSlug = (companyName: string): string => {
 
   const suffix = randomUUID().slice(0, 8);
 
-  return `${normalizedName || 'company'}-${suffix}`;
+  return `${
+    normalizedName || 'company'
+  }-${suffix}`;
 };
 
-export const registerCompany = async (input: RegisterInput) => {
-  const existingUser = await prisma.user.findUnique({
-    where: {
-      email: input.email,
-    },
-    select: {
-      id: true,
-    },
-  });
+/**
+ * Creates a new company and its first owner account.
+ *
+ * Both records are created inside one database transaction. If
+ * either operation fails, Prisma rolls back the complete registration.
+ */
+export const registerCompany = async (
+  input: RegisterInput,
+) => {
+  const existingUser =
+    await prisma.user.findUnique({
+      where: {
+        email: input.email,
+      },
+      select: {
+        id: true,
+      },
+    });
 
   if (existingUser) {
-    throw new AppError(409, 'An account with this email already exists');
+    throw new AppError(
+      409,
+      'An account with this email already exists',
+    );
   }
 
-  const passwordHash = await bcrypt.hash(input.password, 12);
+  /**
+   * Passwords are never stored directly. A bcrypt cost factor of 12
+   * provides deliberately expensive password verification.
+   */
+  const passwordHash = await bcrypt.hash(
+    input.password,
+    12,
+  );
+
   const slug = createSlug(input.companyName);
 
   try {
-    return await prisma.$transaction(async (transaction) => {
-      const company = await transaction.company.create({
-        data: {
-          name: input.companyName,
-          slug,
-          vatNumber: input.vatNumber || null,
-        },
-      });
+    return await prisma.$transaction(
+      async (transaction) => {
+        const company =
+          await transaction.company.create({
+            data: {
+              name: input.companyName,
+              slug,
+              vatNumber:
+                input.vatNumber || null,
+            },
+          });
 
-      const user = await transaction.user.create({
-        data: {
-          companyId: company.id,
-          email: input.email,
-          passwordHash,
-          firstName: input.firstName,
-          lastName: input.lastName,
-          role: 'COMPANY_OWNER',
-        },
-        select: {
-          id: true,
-          companyId: true,
-          email: true,
-          firstName: true,
-          lastName: true,
-          role: true,
-          isActive: true,
-          createdAt: true,
-        },
-      });
+        /**
+         * The first registered user owns the newly created company.
+         */
+        const user =
+          await transaction.user.create({
+            data: {
+              companyId: company.id,
+              email: input.email,
+              passwordHash,
+              firstName: input.firstName,
+              lastName: input.lastName,
+              role: 'COMPANY_OWNER',
+            },
+            select: {
+              id: true,
+              companyId: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              role: true,
+              isActive: true,
+              createdAt: true,
+            },
+          });
 
-      return {
-        company: {
-          id: company.id,
-          name: company.name,
-          slug: company.slug,
-          vatNumber: company.vatNumber,
-        },
-        user,
-      };
-    });
+        return {
+          company: {
+            id: company.id,
+            name: company.name,
+            slug: company.slug,
+            vatNumber: company.vatNumber,
+          },
+          user,
+        };
+      },
+    );
   } catch (error) {
+    /**
+     * The initial lookup improves the response, while this database
+     * constraint check also protects against simultaneous registrations.
+     */
     if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error instanceof
+        Prisma.PrismaClientKnownRequestError &&
       error.code === 'P2002'
     ) {
-      throw new AppError(409, 'An account with this email already exists');
+      throw new AppError(
+        409,
+        'An account with this email already exists',
+      );
     }
 
     throw error;
   }
 };
 
-export const loginUser = async (input: LoginInput) => {
+/**
+ * Verifies credentials and returns an access token with safe user
+ * and company information.
+ */
+export const loginUser = async (
+  input: LoginInput,
+) => {
   const user = await prisma.user.findUnique({
     where: {
       email: input.email,
@@ -109,33 +164,57 @@ export const loginUser = async (input: LoginInput) => {
     },
   });
 
+  /**
+   * Use the same message for an unknown email and incorrect password.
+   * This prevents exposing which email addresses are registered.
+   */
   if (!user) {
-    throw new AppError(401, 'Invalid email or password');
+    throw new AppError(
+      401,
+      'Invalid email or password',
+    );
   }
 
-  const passwordIsCorrect = await bcrypt.compare(
-    input.password,
-    user.passwordHash,
-  );
+  const passwordIsCorrect =
+    await bcrypt.compare(
+      input.password,
+      user.passwordHash,
+    );
 
   if (!passwordIsCorrect) {
-    throw new AppError(401, 'Invalid email or password');
+    throw new AppError(
+      401,
+      'Invalid email or password',
+    );
   }
 
+  /**
+   * Disabled users and companies must not receive new access tokens.
+   */
   if (!user.isActive) {
-    throw new AppError(403, 'This account is inactive');
+    throw new AppError(
+      403,
+      'This account is inactive',
+    );
   }
 
-  if (user.company && !user.company.isActive) {
-    throw new AppError(403, 'This company account is inactive');
+  if (
+    user.company &&
+    !user.company.isActive
+  ) {
+    throw new AppError(
+      403,
+      'This company account is inactive',
+    );
   }
 
-  const accessToken = await createAccessToken({
-    userId: user.id,
-    companyId: user.companyId,
-    role: user.role,
-    email: user.email,
-  });
+  const accessToken =
+    await createAccessToken({
+      userId: user.id,
+      companyId: user.companyId,
+      role: user.role,
+      email: user.email,
+    });
 
   return {
     accessToken,
@@ -151,7 +230,15 @@ export const loginUser = async (input: LoginInput) => {
   };
 };
 
-export const getCurrentUser = async (userId: string) => {
+/**
+ * Loads the authenticated user from the database.
+ *
+ * This revalidates the current account instead of relying only on
+ * information stored in the JWT.
+ */
+export const getCurrentUser = async (
+  userId: string,
+) => {
   const user = await prisma.user.findUnique({
     where: {
       id: userId,
@@ -178,15 +265,27 @@ export const getCurrentUser = async (userId: string) => {
   });
 
   if (!user) {
-    throw new AppError(401, 'User account no longer exists');
+    throw new AppError(
+      401,
+      'User account no longer exists',
+    );
   }
 
   if (!user.isActive) {
-    throw new AppError(403, 'This account is inactive');
+    throw new AppError(
+      403,
+      'This account is inactive',
+    );
   }
 
-  if (user.company && !user.company.isActive) {
-    throw new AppError(403, 'This company account is inactive');
+  if (
+    user.company &&
+    !user.company.isActive
+  ) {
+    throw new AppError(
+      403,
+      'This company account is inactive',
+    );
   }
 
   return user;

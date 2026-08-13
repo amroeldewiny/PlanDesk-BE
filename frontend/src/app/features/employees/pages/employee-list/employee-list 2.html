@@ -1,0 +1,230 @@
+<main class="employees-page">
+  <header class="page-header">
+    <div>
+      <a class="back-link" routerLink="/dashboard">
+        ← Dashboard
+      </a>
+
+      <p class="eyebrow">Team management</p>
+      <h1>Employees</h1>
+      <p class="subtitle">
+        Manage employees and employment information.
+      </p>
+    </div>
+
+    <a class="primary-button" routerLink="/employees/new">
+      + Add employee
+    </a>
+  </header>
+
+  <section class="toolbar">
+    <div class="search">
+      <input
+        type="search"
+        placeholder="Search name, email, job title or number"
+        [value]="searchTerm()"
+        (input)="updateSearch($event)"
+        (keyup.enter)="searchEmployees()"
+      />
+
+      <button type="button" (click)="searchEmployees()">
+        Search
+      </button>
+    </div>
+
+    <select
+      aria-label="Employment type"
+      [value]="selectedEmploymentType()"
+      (change)="changeEmploymentType($event)"
+    >
+      <option value="">All employment types</option>
+      <option value="FULL_TIME">Full-time</option>
+      <option value="PART_TIME">Part-time</option>
+      <option value="FLEXI_JOB">Flexi-job</option>
+      <option value="STUDENT">Student</option>
+      <option value="CONTRACTOR">Contractor</option>
+      <option value="OTHER">Other</option>
+    </select>
+
+    <select
+      aria-label="Employee status"
+      [value]="selectedStatus()"
+      (change)="changeStatus($event)"
+    >
+      <option value="active">Active employees</option>
+      <option value="archived">Archived employees</option>
+      <option value="all">All employees</option>
+    </select>
+  </section>
+
+  @if (errorMessage()) {
+    <section class="error-message">
+      {{ errorMessage() }}
+    </section>
+  }
+
+  @if (isLoading()) {
+    <section class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading employees...</p>
+    </section>
+  } @else if (!errorMessage() && employees().length === 0) {
+    <section class="empty-state">
+      <div class="empty-icon">♟</div>
+      <h2>No employees found</h2>
+
+      @if (searchTerm()) {
+        <p>Try another search term or change the filters.</p>
+      } @else {
+        <p>Add your first employee to start building your team.</p>
+
+        <a class="primary-button" routerLink="/employees/new">
+          + Add employee
+        </a>
+      }
+    </section>
+  } @else if (!errorMessage()) {
+    <section class="table-card">
+      <div class="table-summary">
+        <strong>{{ pagination().total }}</strong>
+        employees found
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Job</th>
+              <th>Contact</th>
+              <th>Employment</th>
+              <th>Start date</th>
+              <th>Status</th>
+              <th class="actions-heading">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (employee of employees(); track employee.id) {
+              <tr>
+                <td>
+                  <div class="employee-name">
+                    <div class="employee-avatar">
+                      {{ employee.firstName.charAt(0).toUpperCase() }}
+                      {{ employee.lastName.charAt(0).toUpperCase() }}
+                    </div>
+
+                    <div>
+                      <strong>
+                        {{ employee.firstName }}
+                        {{ employee.lastName }}
+                      </strong>
+
+                      <span>
+                        {{ employee.employeeNumber || 'No employee number' }}
+                      </span>
+                    </div>
+                  </div>
+                </td>
+
+                <td>
+                  {{ employee.jobTitle || 'Not specified' }}
+                </td>
+
+                <td>
+                  <div class="contact-information">
+                    <span>{{ employee.email || 'No email' }}</span>
+                    <small>{{ employee.phone || 'No phone number' }}</small>
+                  </div>
+                </td>
+
+                <td>
+                  <span class="employment-type">
+                    {{
+                      employmentTypeLabels[
+                        employee.employmentType
+                      ]
+                    }}
+                  </span>
+                </td>
+
+                <td>
+                  @if (employee.startDate) {
+                    {{ employee.startDate | date: 'dd MMM yyyy' }}
+                  } @else {
+                    <span class="muted">Not specified</span>
+                  }
+                </td>
+
+                <td>
+                  <span
+                    class="status"
+                    [class.archived]="!employee.isActive"
+                  >
+                    {{ employee.isActive ? 'Active' : 'Archived' }}
+                  </span>
+                </td>
+
+                <td class="actions">
+                  <a
+                    class="edit-button"
+                    [routerLink]="[
+                      '/employees',
+                      employee.id,
+                      'edit'
+                    ]"
+                  >
+                    Edit
+                  </a>
+
+                  @if (employee.isActive) {
+                    <button
+                      type="button"
+                      (click)="archiveEmployee(employee)"
+                    >
+                      Archive
+                    </button>
+                  } @else {
+                    <button
+                      type="button"
+                      (click)="restoreEmployee(employee)"
+                    >
+                      Restore
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <footer class="pagination">
+        <span>
+          Page {{ pagination().page }}
+          of {{ pagination().totalPages }}
+        </span>
+
+        <div>
+          <button
+            type="button"
+            [disabled]="pagination().page <= 1"
+            (click)="previousPage()"
+          >
+            Previous
+          </button>
+
+          <button
+            type="button"
+            [disabled]="
+              pagination().page >= pagination().totalPages
+            "
+            (click)="nextPage()"
+          >
+            Next
+          </button>
+        </div>
+      </footer>
+    </section>
+  }
+</main>

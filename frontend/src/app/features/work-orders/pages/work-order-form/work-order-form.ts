@@ -1,16 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import {
-  Component,
-  computed,
-  inject,
-  OnInit,
-  signal,
-} from '@angular/core';
-import {
-  FormBuilder,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize, forkJoin } from 'rxjs';
 
@@ -62,13 +52,9 @@ export class WorkOrderForm implements OnInit {
   protected readonly saving = signal(false);
   protected readonly errorMessage = signal('');
 
-  protected readonly isEditMode = computed(
-    () => this.workOrderId() !== null,
-  );
+  protected readonly isEditMode = computed(() => this.workOrderId() !== null);
 
-  protected readonly pageLoading = computed(
-    () => this.optionsLoading() || this.workOrderLoading(),
-  );
+  protected readonly pageLoading = computed(() => this.optionsLoading() || this.workOrderLoading());
 
   protected readonly statusLabels: Record<WorkOrderStatus, string> = {
     DRAFT: 'Draft',
@@ -80,15 +66,8 @@ export class WorkOrderForm implements OnInit {
 
   protected readonly form = this.formBuilder.nonNullable.group({
     customerId: ['', Validators.required],
-    title: [
-      '',
-      [
-        Validators.required,
-        Validators.minLength(2),
-        Validators.maxLength(200),
-      ],
-    ],
-    description: ['', Validators.maxLength(2000)],
+    title: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(150)]],
+    description: ['', Validators.maxLength(3000)],
     status: ['DRAFT' as WorkOrderStatus, Validators.required],
     priority: ['NORMAL' as WorkOrderPriority, Validators.required],
     scheduledStart: [''],
@@ -96,14 +75,7 @@ export class WorkOrderForm implements OnInit {
     addressLine: ['', Validators.maxLength(200)],
     postalCode: ['', Validators.maxLength(20)],
     city: ['', Validators.maxLength(100)],
-    countryCode: [
-      'BE',
-      [
-        Validators.required,
-        Validators.minLength(2),
-        Validators.maxLength(2),
-      ],
-    ],
+    countryCode: ['BE', [Validators.required, Validators.minLength(2), Validators.maxLength(2)]],
     notes: ['', Validators.maxLength(3000)],
     employeeIds: this.formBuilder.nonNullable.control<string[]>([]),
   });
@@ -141,9 +113,7 @@ export class WorkOrderForm implements OnInit {
       ['PLANNED', 'IN_PROGRESS', 'COMPLETED'].includes(effectiveStatus) &&
       (!value.scheduledStart || !value.scheduledEnd)
     ) {
-      this.errorMessage.set(
-        'This status requires a start and end time',
-      );
+      this.errorMessage.set('This status requires a start and end time');
       return;
     }
 
@@ -180,31 +150,23 @@ export class WorkOrderForm implements OnInit {
 
     this.saving.set(true);
 
-    saveRequest
-      .pipe(finalize(() => this.saving.set(false)))
-      .subscribe({
-        next: (response) => {
-          const savedWorkOrder = response.data?.workOrder;
+    saveRequest.pipe(finalize(() => this.saving.set(false))).subscribe({
+      next: (response) => {
+        const savedWorkOrder = response.data?.workOrder;
 
-          if (!savedWorkOrder) {
-            this.errorMessage.set('The server returned no work order data');
-            return;
-          }
+        if (!savedWorkOrder) {
+          this.errorMessage.set('The server returned no work order data');
+          return;
+        }
 
-          void this.router.navigate([
-            '/work-orders',
-            savedWorkOrder.id,
-          ]);
-        },
-        error: (error: HttpErrorResponse) => {
-          this.errorMessage.set(
-            error.error?.message ??
-              `Unable to ${
-                workOrderId ? 'update' : 'create'
-              } the work order`,
-          );
-        },
-      });
+        void this.router.navigate(['/work-orders', savedWorkOrder.id]);
+      },
+      error: (error: HttpErrorResponse) => {
+        this.errorMessage.set(
+          error.error?.message ?? `Unable to ${workOrderId ? 'update' : 'create'} the work order`,
+        );
+      },
+    });
   }
 
   protected toggleEmployee(employeeId: string, checked: boolean): void {
@@ -224,30 +186,15 @@ export class WorkOrderForm implements OnInit {
   protected cancel(): void {
     const workOrderId = this.workOrderId();
 
-    void this.router.navigate(
-      workOrderId
-        ? ['/work-orders', workOrderId]
-        : ['/work-orders'],
-    );
+    void this.router.navigate(workOrderId ? ['/work-orders', workOrderId] : ['/work-orders']);
   }
 
   private loadOptions(): void {
     this.optionsLoading.set(true);
 
     forkJoin({
-      customers: this.customerService.getCustomers(
-        1,
-        100,
-        '',
-        'active',
-      ),
-      employees: this.employeeService.getEmployees(
-        1,
-        100,
-        '',
-        'active',
-        '',
-      ),
+      customers: this.customerService.getCustomers(1, 100, '', 'active'),
+      employees: this.employeeService.getEmployees(1, 100, '', 'active', ''),
     })
       .pipe(finalize(() => this.optionsLoading.set(false)))
       .subscribe({
@@ -270,10 +217,7 @@ export class WorkOrderForm implements OnInit {
           );
         },
         error: (error: HttpErrorResponse) => {
-          this.errorMessage.set(
-            error.error?.message ??
-              'Unable to load customers and employees',
-          );
+          this.errorMessage.set(error.error?.message ?? 'Unable to load customers and employees');
         },
       });
   }
@@ -302,34 +246,23 @@ export class WorkOrderForm implements OnInit {
             description: workOrder.description ?? '',
             status: workOrder.status,
             priority: workOrder.priority,
-            scheduledStart: this.toLocalDateTime(
-              workOrder.scheduledStart,
-            ),
-            scheduledEnd: this.toLocalDateTime(
-              workOrder.scheduledEnd,
-            ),
+            scheduledStart: this.toLocalDateTime(workOrder.scheduledStart),
+            scheduledEnd: this.toLocalDateTime(workOrder.scheduledEnd),
             addressLine: workOrder.addressLine ?? '',
             postalCode: workOrder.postalCode ?? '',
             city: workOrder.city ?? '',
             countryCode: workOrder.countryCode,
             notes: workOrder.notes ?? '',
-            employeeIds: workOrder.assignments.map(
-              (assignment) => assignment.employee.id,
-            ),
+            employeeIds: workOrder.assignments.map((assignment) => assignment.employee.id),
           });
         },
         error: (error: HttpErrorResponse) => {
-          this.errorMessage.set(
-            error.error?.message ?? 'Unable to load the work order',
-          );
+          this.errorMessage.set(error.error?.message ?? 'Unable to load the work order');
         },
       });
   }
 
-  private updateExistingWorkOrder(
-    workOrderId: string,
-    request: CreateWorkOrderRequest,
-  ) {
+  private updateExistingWorkOrder(workOrderId: string, request: CreateWorkOrderRequest) {
     const updateRequest: UpdateWorkOrderRequest = {
       ...request,
     };
@@ -337,10 +270,7 @@ export class WorkOrderForm implements OnInit {
     // Status changes are controlled from the detail workflow.
     delete updateRequest.status;
 
-    return this.workOrderService.updateWorkOrder(
-      workOrderId,
-      updateRequest,
-    );
+    return this.workOrderService.updateWorkOrder(workOrderId, updateRequest);
   }
 
   private optionalText(value: string): string | null {

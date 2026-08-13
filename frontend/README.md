@@ -1,59 +1,59 @@
-# Frontend
+# PlanDesk BE frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.0.8.
+The frontend is an Angular 22 standalone application for the PlanDesk company
+management workspace.
 
-## Development server
+## Structure
 
-To start a local development server, run:
-
-```bash
-ng serve
+```text
+src/app/
+├── core/
+│   ├── guards/        Route access checks
+│   ├── interceptors/  HTTP request behavior
+│   ├── layout/        Shared authenticated application shell
+│   ├── models/        Cross-feature response and session types
+│   └── services/      Authentication, tokens, and health checks
+├── environments/      API endpoint configuration
+└── features/
+    ├── auth/
+    ├── customers/
+    ├── dashboard/
+    ├── employees/
+    ├── planning/
+    └── work-orders/
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Each business feature keeps its models, pages, and API service together. Pages
+are lazy-loaded by `app.routes.ts`, while authenticated pages render inside the
+shared `AppShell`.
 
-## Code scaffolding
+## Development
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Install dependencies and start the application:
 
 ```bash
-ng generate --help
+npm ci
+npm start
 ```
 
-## Building
+The UI runs at `http://localhost:4200` and expects the API at
+`http://localhost:3000/api`.
 
-To build the project run:
+## Verification
 
 ```bash
-ng build
+npm test
+npm run build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+The production build is written to `dist/frontend`.
 
-## Running unit tests
+## Authentication
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+The authentication service stores the current user and company in signals. The
+HTTP interceptor attaches the access token only to PlanDesk API requests. Route
+guards improve navigation behavior, but the backend remains the security
+authority for authentication, company isolation, and roles.
 
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+V1 persists its short-lived access token in local storage. A later refresh-token
+release should store long-lived credentials in Secure, HttpOnly cookies.

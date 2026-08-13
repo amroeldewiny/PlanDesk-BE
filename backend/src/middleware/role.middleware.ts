@@ -6,12 +6,21 @@ import type {
 
 import { AppError } from '../common/errors/app-error.js';
 
+/**
+ * Roles currently supported by PlanDesk BE.
+ */
 export type ApplicationRole =
   | 'PLATFORM_ADMIN'
   | 'COMPANY_OWNER'
   | 'COMPANY_ADMIN'
   | 'EMPLOYEE';
 
+/**
+ * Roles allowed to manage company resources during version 1.
+ *
+ * This shared list keeps authorization consistent across customer,
+ * employee, work-order, planning and dashboard routes.
+ */
 export const COMPANY_MANAGEMENT_ROLES = [
   'COMPANY_OWNER',
   'COMPANY_ADMIN',
@@ -21,7 +30,7 @@ export const COMPANY_MANAGEMENT_ROLES = [
  * Restricts an endpoint to authenticated users with one of the
  * explicitly permitted roles.
  *
- * Authentication must run before this middleware.
+ * The authenticate middleware must run before this middleware.
  */
 export function authorizeRoles(
   ...allowedRoles: ApplicationRole[]
@@ -31,15 +40,22 @@ export function authorizeRoles(
     _response: Response,
     next: NextFunction,
   ): void => {
-    const authenticatedUser = request.authUser;
+    const authenticatedUser =
+      request.authUser;
 
     if (!authenticatedUser) {
-      next(new AppError(401, 'Authentication is required'));
+      next(
+        new AppError(
+          401,
+          'Authentication is required',
+        ),
+      );
       return;
     }
 
     const hasPermission = allowedRoles.some(
-      (role) => role === authenticatedUser.role,
+      (role) =>
+        role === authenticatedUser.role,
     );
 
     if (!hasPermission) {
