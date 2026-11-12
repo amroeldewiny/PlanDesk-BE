@@ -1,0 +1,229 @@
+<section class="invoice-form-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Finance</p>
+      <h1>Create invoice</h1>
+      <p>Create a draft invoice for one customer.</p>
+    </div>
+
+    <a class="back-link" routerLink="/invoices">
+      ← Back to invoices
+    </a>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="error-message">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <form
+    [formGroup]="invoiceForm"
+    (ngSubmit)="submit()"
+  >
+    <section class="form-card">
+      <div class="section-heading">
+        <div>
+          <h2>Customer</h2>
+          <p>Select the customer receiving this invoice.</p>
+        </div>
+      </div>
+
+      <label class="customer-field">
+        <span>Customer *</span>
+
+        <select formControlName="customerId">
+          <option value="" disabled>
+            @if (isLoadingCustomers()) {
+              Loading customers...
+            } @else {
+              Select a customer
+            }
+          </option>
+
+          @for (customer of customers(); track customer.id) {
+            <option [value]="customer.id">
+              {{ customer.name }}
+            </option>
+          }
+        </select>
+
+        @if (
+          invoiceForm.controls.customerId.touched &&
+          invoiceForm.controls.customerId.invalid
+        ) {
+          <small class="field-error">
+            Select a customer.
+          </small>
+        }
+      </label>
+    </section>
+
+    <section class="form-card">
+      <div class="section-heading">
+        <div>
+          <h2>Invoice lines</h2>
+          <p>Add the services or products being invoiced.</p>
+        </div>
+
+        <button
+          class="secondary-button"
+          type="button"
+          (click)="addItem()"
+        >
+          + Add line
+        </button>
+      </div>
+
+      <div class="invoice-lines" formArrayName="items">
+        @for (
+          item of items.controls;
+          track item;
+          let index = $index
+        ) {
+          <div
+            class="invoice-line"
+            [formGroupName]="index"
+          >
+            <label class="description-field">
+              <span>Description *</span>
+
+              <input
+                type="text"
+                formControlName="description"
+                placeholder="Cleaning service"
+              />
+            </label>
+
+            <label>
+              <span>Quantity *</span>
+
+              <input
+                type="number"
+                formControlName="quantity"
+                min="0.01"
+                step="0.01"
+              />
+            </label>
+
+            <label>
+              <span>Unit price *</span>
+
+              <div class="money-input">
+                <span>€</span>
+
+                <input
+                  type="number"
+                  formControlName="unitPrice"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+            </label>
+
+            <label>
+              <span>VAT *</span>
+
+              <div class="vat-input">
+                <input
+                  type="number"
+                  formControlName="vatRate"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                />
+
+                <span>%</span>
+              </div>
+            </label>
+
+            <div class="line-total">
+              <span>Line total</span>
+
+              <strong>
+                {{
+                  lineSubtotal(index) + lineVat(index)
+                    | currency: 'EUR'
+                }}
+              </strong>
+            </div>
+
+            <button
+              class="remove-button"
+              type="button"
+              aria-label="Remove invoice line"
+              [disabled]="items.length === 1"
+              (click)="removeItem(index)"
+            >
+              ×
+            </button>
+          </div>
+
+          @if (item.touched && item.invalid) {
+            <p class="line-error">
+              Complete the description, quantity, price and VAT.
+            </p>
+          }
+        }
+      </div>
+    </section>
+
+    <section class="form-grid">
+      <article class="form-card">
+        <div class="section-heading">
+          <div>
+            <h2>Notes</h2>
+            <p>Optional information for the customer.</p>
+          </div>
+        </div>
+
+        <label>
+          <span>Invoice notes</span>
+
+          <textarea
+            formControlName="notes"
+            rows="6"
+            placeholder="Payment reference or additional information"
+          ></textarea>
+        </label>
+      </article>
+
+      <article class="form-card totals-card">
+        <h2>Invoice totals</h2>
+
+        <div class="total-row">
+          <span>Subtotal</span>
+          <strong>{{ subtotal() | currency: 'EUR' }}</strong>
+        </div>
+
+        <div class="total-row">
+          <span>VAT</span>
+          <strong>{{ vatTotal() | currency: 'EUR' }}</strong>
+        </div>
+
+        <div class="total-row grand-total">
+          <span>Total</span>
+          <strong>{{ grandTotal() | currency: 'EUR' }}</strong>
+        </div>
+
+        <small>
+          Official totals are recalculated securely by the backend.
+        </small>
+      </article>
+    </section>
+
+    <footer class="form-actions">
+      <a class="cancel-button" routerLink="/invoices">
+        Cancel
+      </a>
+
+      <button
+        class="primary-button"
+        type="submit"
+        [disabled]="isSaving() || isLoadingCustomers()"
+      >
+        {{ isSaving() ? 'Creating...' : 'Create draft invoice' }}
+      </button>
+    </footer>
+  </form>
+</section>

@@ -15,6 +15,7 @@ import { dashboardRouter } from './modules/dashboard/dashboard.routes.js';
 import { employeeRouter } from './modules/employee/employee.routes.js';
 import { planningRouter } from './modules/planning/planning.routes.js';
 import { workOrderRouter } from './modules/work-order/work-order.routes.js';
+import { invoiceRouter } from './modules/invoice/invoice.routes.js';
 
 /**
  * Configures the PlanDesk Express application.
@@ -94,6 +95,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/customers', customerRouter);
 app.use('/api/dashboard', dashboardRouter);
 app.use('/api/employees', employeeRouter);
+app.use('/api/invoices', invoiceRouter);
 app.use('/api/planning', planningRouter);
 app.use('/api/work-orders', workOrderRouter);
 

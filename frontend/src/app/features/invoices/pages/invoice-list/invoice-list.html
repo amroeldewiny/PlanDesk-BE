@@ -1,0 +1,227 @@
+<section class="invoice-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Finance</p>
+      <h1>Invoices</h1>
+      <p class="page-description">
+        Create invoices and follow their payment status.
+      </p>
+    </div>
+
+    <a class="primary-button" routerLink="/invoices/new">
+      <span>+</span>
+      Create invoice
+    </a>
+  </header>
+
+  <section class="filter-card">
+    <form class="filters" (ngSubmit)="applyFilters()">
+      <label class="search-field">
+        <span>Search invoices</span>
+
+        <input
+          type="search"
+          name="search"
+          [(ngModel)]="searchTerm"
+          placeholder="Invoice number or customer"
+        />
+      </label>
+
+      <label>
+        <span>Status</span>
+
+        <select
+          name="status"
+          [(ngModel)]="statusFilter"
+        >
+          @for (option of statusOptions; track option.value) {
+            <option [value]="option.value">
+              {{ option.label }}
+            </option>
+          }
+        </select>
+      </label>
+
+      <div class="filter-actions">
+        <button class="secondary-button" type="submit">
+          Search
+        </button>
+
+        <button
+          class="text-button"
+          type="button"
+          (click)="clearFilters()"
+        >
+          Clear
+        </button>
+      </div>
+    </form>
+  </section>
+
+  @if (errorMessage()) {
+    <div class="message error-message">
+      <span>!</span>
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <section class="invoice-card">
+    <div class="card-heading">
+      <div>
+        <h2>Invoice overview</h2>
+
+        <p>
+          {{ pagination().total }}
+          {{ pagination().total === 1 ? 'invoice' : 'invoices' }}
+          found
+        </p>
+      </div>
+    </div>
+
+    @if (isLoading()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading invoices...</p>
+      </div>
+    } @else if (invoices().length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">€</div>
+        <h3>No invoices found</h3>
+        <p>
+          Create your first invoice or change the active filters.
+        </p>
+
+        <a class="primary-button" routerLink="/invoices/new">
+          Create invoice
+        </a>
+      </div>
+    } @else {
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Invoice</th>
+              <th>Customer</th>
+              <th>Issue date</th>
+              <th>Due date</th>
+              <th>Status</th>
+              <th class="amount-column">Total</th>
+              <th>
+                <span class="visually-hidden">Actions</span>
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (invoice of invoices(); track invoice.id) {
+              <tr>
+                <td>
+                  <a
+                    class="invoice-number"
+                    [routerLink]="['/invoices', invoice.id]"
+                  >
+                    {{ invoice.invoiceNumber || 'Draft invoice' }}
+                  </a>
+
+                  <small>
+                    Created
+                    {{ invoice.createdAt | date: 'dd MMM yyyy' }}
+                  </small>
+                </td>
+
+                <td>
+                  <strong>{{ invoice.customer.name }}</strong>
+
+                  @if (invoice.customer.vatNumber) {
+                    <small>{{ invoice.customer.vatNumber }}</small>
+                  }
+                </td>
+
+                <td>
+                  {{ invoice.issueDate
+                    ? (invoice.issueDate | date: 'dd MMM yyyy')
+                    : '—'
+                  }}
+                </td>
+
+                <td>
+                  {{ invoice.dueDate
+                    ? (invoice.dueDate | date: 'dd MMM yyyy')
+                    : '—'
+                  }}
+                </td>
+
+                <td>
+                  <span
+                    class="status-badge"
+                    [class.draft]="invoice.status === 'DRAFT'"
+                    [class.issued]="invoice.status === 'ISSUED'"
+                    [class.sent]="invoice.status === 'SENT'"
+                    [class.paid]="invoice.status === 'PAID'"
+                  >
+                    {{ getStatusLabel(invoice.status) }}
+                  </span>
+                </td>
+
+                <td class="amount-column">
+                  <strong>
+                    {{ invoice.total | currency: 'EUR' }}
+                  </strong>
+                </td>
+
+                <td class="actions-column">
+                  <a
+                    class="view-link"
+                    [routerLink]="['/invoices', invoice.id]"
+                  >
+                    View
+                  </a>
+
+                  @if (invoice.status === 'DRAFT') {
+                    <a
+                      class="edit-link"
+                      [routerLink]="[
+                        '/invoices',
+                        invoice.id,
+                        'edit'
+                      ]"
+                    >
+                      Edit
+                    </a>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (pagination().totalPages > 1) {
+        <footer class="pagination">
+          <button
+            type="button"
+            [disabled]="pagination().page <= 1"
+            (click)="previousPage()"
+          >
+            Previous
+          </button>
+
+          <span>
+            Page {{ pagination().page }}
+            of {{ pagination().totalPages }}
+          </span>
+
+          <button
+            type="button"
+            [disabled]="
+              pagination().page >= pagination().totalPages
+            "
+            (click)="nextPage()"
+          >
+            Next
+          </button>
+        </footer>
+      }
+    }
+  </section>
+</section>

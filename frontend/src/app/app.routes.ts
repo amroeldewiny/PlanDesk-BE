@@ -119,7 +119,33 @@ export const routes: Routes = [
           ).then((component) => component.EmployeeList),
         title: 'Employees | PlanDesk BE',
       },
-
+      {
+        path: 'invoices/new',
+        canActivate: [managementGuard],
+        loadComponent: () =>
+          import(
+            './features/invoices/pages/invoice-form/invoice-form'
+          ).then((component) => component.InvoiceForm),
+        title: 'Create Invoice | PlanDesk BE',
+      },
+      {
+        path: 'invoices/:id',
+        canActivate: [managementGuard],
+        loadComponent: () =>
+          import(
+            './features/invoices/pages/invoice-detail/invoice-detail'
+          ).then((component) => component.InvoiceDetail),
+        title: 'Invoice Details | PlanDesk BE',
+      },
+      {
+        path: 'invoices',
+        canActivate: [managementGuard],
+        loadComponent: () =>
+          import(
+            './features/invoices/pages/invoice-list/invoice-list'
+          ).then((component) => component.InvoiceList),
+        title: 'Invoices | PlanDesk BE',
+      },
       {
         path: '',
         pathMatch: 'full',

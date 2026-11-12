@@ -1,0 +1,305 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.invoice-form-page {
+  box-sizing: border-box;
+  display: grid;
+  gap: 1.5rem;
+  margin: 0 auto;
+  max-width: 1500px;
+  padding: 2rem;
+  width: 100%;
+}
+
+.page-header {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+}
+
+.eyebrow {
+  color: #2563eb;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  margin: 0 0 0.4rem;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  color: #172033;
+  font-size: 2rem;
+  margin-bottom: 0.4rem;
+}
+
+.page-header p,
+.section-heading p {
+  color: #64748b;
+  margin-bottom: 0;
+}
+
+.back-link {
+  color: #2563eb;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+form {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.form-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px rgb(15 23 42 / 5%);
+  padding: 1.4rem;
+}
+
+.section-heading {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.section-heading h2,
+.totals-card h2 {
+  color: #172033;
+  font-size: 1.1rem;
+  margin-bottom: 0.3rem;
+}
+
+label {
+  color: #334155;
+  display: grid;
+  font-size: 0.85rem;
+  font-weight: 700;
+  gap: 0.4rem;
+}
+
+.customer-field {
+  max-width: 600px;
+}
+
+input,
+select,
+textarea {
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.65rem;
+  box-sizing: border-box;
+  color: #172033;
+  font: inherit;
+  min-height: 2.75rem;
+  padding: 0.65rem 0.8rem;
+  width: 100%;
+}
+
+textarea {
+  resize: vertical;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 12%);
+  outline: none;
+}
+
+.invoice-lines {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.invoice-line {
+  align-items: end;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.8rem;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns:
+    minmax(220px, 2fr)
+    110px
+    145px
+    110px
+    130px
+    42px;
+  padding: 1rem;
+}
+
+.money-input,
+.vat-input {
+  align-items: center;
+  display: flex;
+  position: relative;
+}
+
+.money-input > span {
+  color: #64748b;
+  left: 0.8rem;
+  position: absolute;
+}
+
+.money-input input {
+  padding-left: 1.8rem;
+}
+
+.vat-input > span {
+  color: #64748b;
+  position: absolute;
+  right: 0.8rem;
+}
+
+.vat-input input {
+  padding-right: 1.8rem;
+}
+
+.line-total {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.line-total span {
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.line-total strong {
+  min-height: 2.75rem;
+  padding-top: 0.75rem;
+}
+
+.primary-button,
+.secondary-button,
+.cancel-button,
+.remove-button {
+  border: 0;
+  border-radius: 0.65rem;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  min-height: 2.75rem;
+  padding: 0.65rem 1rem;
+  text-decoration: none;
+}
+
+.primary-button {
+  background: #2563eb;
+  color: #fff;
+}
+
+.secondary-button {
+  background: #e0e7ff;
+  color: #1d4ed8;
+}
+
+.cancel-button {
+  align-items: center;
+  background: #e2e8f0;
+  color: #334155;
+  display: inline-flex;
+}
+
+.remove-button {
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 1.25rem;
+  padding: 0.5rem;
+}
+
+.remove-button:disabled,
+.primary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.form-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1fr 380px;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.8rem 0;
+}
+
+.grand-total {
+  border-top: 1px solid #cbd5e1;
+  color: #172033;
+  font-size: 1.15rem;
+  margin-top: 0.4rem;
+}
+
+.totals-card small {
+  color: #64748b;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.error-message,
+.line-error,
+.field-error {
+  color: #b91c1c;
+}
+
+.error-message {
+  background: #fef2f2;
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+.line-error {
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+@media (max-width: 1100px) {
+  .invoice-line {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .description-field {
+    grid-column: 1 / -1;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .invoice-form-page {
+    padding: 1rem;
+  }
+
+  .page-header,
+  .section-heading,
+  .form-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .invoice-line {
+    grid-template-columns: 1fr;
+  }
+}
