@@ -5,21 +5,17 @@
       <h1>Invoice details</h1>
     </div>
 
-    <a class="back-link" routerLink="/invoices">
-      ← Back to invoices
-    </a>
+    <a class="back-link" routerLink="/invoices">← Back to invoices</a>
   </header>
 
-  @if (errorMessage()) {
-    <div class="error-message">
-      {{ errorMessage() }}
-    </div>
+  @if (errorMessage(); as message) {
+    <div class="error-message" role="alert">{{ message }}</div>
   }
 
   @if (isLoading()) {
-    <div class="loading-card">
-      <div class="spinner"></div>
-      <p>Loading invoice...</p>
+    <div class="loading-card" role="status">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Loading invoice…</p>
     </div>
   } @else if (invoice(); as invoice) {
     <section class="invoice-header-card">
@@ -34,61 +30,55 @@
           {{ getStatusLabel(invoice.status) }}
         </span>
 
-        <h2>
-          {{ invoice.invoiceNumber || 'Draft invoice' }}
-        </h2>
-
-        <p>
-          Created {{ invoice.createdAt | date: 'dd MMMM yyyy' }}
-        </p>
+        <h2>{{ invoice.number || 'Draft invoice' }}</h2>
+        <p>Created {{ invoice.createdAt | date: 'dd MMMM yyyy' }}</p>
       </div>
 
       <div class="header-total">
-        <span>Total</span>
+        <span>Total incl. VAT</span>
+        <strong>{{ invoice.totalInclVat | currency: 'EUR' }}</strong>
 
-        <strong>
-          {{ invoice.total | currency: 'EUR' }}
-        </strong>
+        @if (invoice.status === 'DRAFT' && !isUpdatingStatus()) {
+          <a class="back-link" [routerLink]="['/invoices', invoice.id, 'edit']">
+            Edit draft
+          </a>
+        }
+
         @if (workflowLabels[invoice.status]; as label) {
-            <button
-                class="workflow-button"
-                type="button"
-                [disabled]="isUpdatingStatus()"
-                (click)="advanceInvoiceStatus()"
-            >
-                {{ isUpdatingStatus() ? 'Updating…' : label }}
-            </button>
+          <button
+            class="workflow-button"
+            type="button"
+            [disabled]="isUpdatingStatus()"
+            (click)="advanceInvoiceStatus()"
+          >
+            {{ isUpdatingStatus() ? 'Updating…' : label }}
+          </button>
         }
       </div>
     </section>
 
     @if (workflowError(); as message) {
-         <div class="error-message" role="alert">{{ message }}</div>
+      <div class="error-message" role="alert">{{ message }}</div>
     }
 
     <section class="information-grid">
       <article class="detail-card">
         <h3>Customer</h3>
-
         <strong>{{ invoice.customer.name }}</strong>
 
         @if (invoice.customer.contactPerson) {
           <p>{{ invoice.customer.contactPerson }}</p>
         }
-
         @if (invoice.customer.email) {
           <p>{{ invoice.customer.email }}</p>
         }
-
         @if (invoice.customer.vatNumber) {
           <p>VAT: {{ invoice.customer.vatNumber }}</p>
         }
-
         @if (invoice.customer.addressLine) {
           <p>
             {{ invoice.customer.addressLine }}<br />
-            {{ invoice.customer.postalCode }}
-            {{ invoice.customer.city }}<br />
+            {{ invoice.customer.postalCode }} {{ invoice.customer.city }}<br />
             {{ invoice.customer.countryCode }}
           </p>
         }
@@ -100,26 +90,12 @@
         <dl>
           <div>
             <dt>Issue date</dt>
-            <dd>
-              {{
-                invoice.issueDate
-                  ? (invoice.issueDate | date: 'dd MMM yyyy')
-                  : 'Not issued'
-              }}
-            </dd>
+            <dd>{{ (invoice.issueDate | date: 'dd MMM yyyy') ?? 'Not issued' }}</dd>
           </div>
-
           <div>
             <dt>Due date</dt>
-            <dd>
-              {{
-                invoice.dueDate
-                  ? (invoice.dueDate | date: 'dd MMM yyyy')
-                  : '—'
-              }}
-            </dd>
+            <dd>{{ (invoice.dueDate | date: 'dd MMM yyyy') ?? '—' }}</dd>
           </div>
-
           <div>
             <dt>Status</dt>
             <dd>{{ getStatusLabel(invoice.status) }}</dd>
@@ -130,47 +106,29 @@
 
     <section class="detail-card items-card">
       <div class="card-heading">
-        <div>
-          <h3>Invoice lines</h3>
-          <p>Services and products included in this invoice.</p>
-        </div>
+        <h3>Invoice lines</h3>
       </div>
 
       <div class="table-wrapper">
         <table>
           <thead>
             <tr>
-              <th>Description</th>
-              <th class="number-column">Quantity</th>
-              <th class="number-column">Unit price</th>
-              <th class="number-column">VAT</th>
-              <th class="number-column">Total</th>
+              <th scope="col">Description</th>
+              <th scope="col" class="number-column">Quantity</th>
+              <th scope="col" class="number-column">Unit price excl. VAT</th>
+              <th scope="col" class="number-column">VAT</th>
+              <th scope="col" class="number-column">Total incl. VAT</th>
             </tr>
           </thead>
-
           <tbody>
             @for (item of invoice.items; track item.id) {
               <tr>
-                <td>
-                  <strong>{{ item.description }}</strong>
-                </td>
-
+                <td><strong>{{ item.description }}</strong></td>
+                <td class="number-column">{{ item.quantity }}</td>
+                <td class="number-column">{{ item.unitPriceExclVat | currency: 'EUR' }}</td>
+                <td class="number-column">{{ item.vatRate }}%</td>
                 <td class="number-column">
-                  {{ item.quantity }}
-                </td>
-
-                <td class="number-column">
-                  {{ item.unitPrice | currency: 'EUR' }}
-                </td>
-
-                <td class="number-column">
-                  {{ item.vatRate }}%
-                </td>
-
-                <td class="number-column">
-                  <strong>
-                    {{ item.total | currency: 'EUR' }}
-                  </strong>
+                  <strong>{{ item.lineTotalInclVat | currency: 'EUR' }}</strong>
                 </td>
               </tr>
             }
@@ -182,32 +140,21 @@
     <section class="bottom-grid">
       <article class="detail-card">
         <h3>Notes</h3>
-
-        <p class="notes">
-          {{ invoice.notes || 'No notes were added.' }}
-        </p>
+        <p class="notes">{{ invoice.notes || 'No notes were added.' }}</p>
       </article>
 
       <article class="detail-card totals-card">
         <div class="total-row">
-          <span>Subtotal</span>
-          <strong>
-            {{ invoice.subtotal | currency: 'EUR' }}
-          </strong>
+          <span>Subtotal excl. VAT</span>
+          <strong>{{ invoice.subtotalExclVat | currency: 'EUR' }}</strong>
         </div>
-
         <div class="total-row">
           <span>VAT</span>
-          <strong>
-            {{ invoice.vatTotal | currency: 'EUR' }}
-          </strong>
+          <strong>{{ invoice.vatTotal | currency: 'EUR' }}</strong>
         </div>
-
         <div class="total-row grand-total">
-          <span>Total</span>
-          <strong>
-            {{ invoice.total | currency: 'EUR' }}
-          </strong>
+          <span>Total incl. VAT</span>
+          <strong>{{ invoice.totalInclVat | currency: 'EUR' }}</strong>
         </div>
       </article>
     </section>

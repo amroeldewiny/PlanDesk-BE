@@ -129,6 +129,14 @@ export const routes: Routes = [
         title: 'Create Invoice | PlanDesk BE',
       },
       {
+        path: 'invoices/:id/edit',
+        canActivate: [managementGuard],
+        loadComponent: () =>
+          import('./features/invoices/pages/invoice-form/invoice-form')
+            .then((component) => component.InvoiceForm),
+        title: 'Edit Draft Invoice | PlanDesk BE',
+      },
+      {
         path: 'invoices/:id',
         canActivate: [managementGuard],
         loadComponent: () =>

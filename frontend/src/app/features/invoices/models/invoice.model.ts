@@ -32,12 +32,14 @@ export interface InvoiceCustomer {
 export interface InvoiceItem {
   id: string;
   description: string;
+  unitCode: string;
   quantity: MoneyValue;
-  unitPrice: MoneyValue;
+  unitPriceExclVat: MoneyValue;
+  discountPercentage: MoneyValue;
+  lineSubtotalExclVat: MoneyValue;
   vatRate: MoneyValue;
-  subtotal: MoneyValue;
   vatAmount: MoneyValue;
-  total: MoneyValue;
+  lineTotalInclVat: MoneyValue;
   position: number;
 }
 
@@ -57,7 +59,7 @@ export interface Invoice {
   companyId: string;
   customerId: string;
 
-  invoiceNumber: string | null;
+  number: string | null;
   status: InvoiceStatus;
 
   issueDate: string | null;
@@ -65,12 +67,11 @@ export interface Invoice {
   sentAt: string | null;
   paidAt: string | null;
 
-  subtotal: MoneyValue;
+  subtotalExclVat: MoneyValue;
   vatTotal: MoneyValue;
-  total: MoneyValue;
+  totalInclVat: MoneyValue;
 
   notes: string | null;
-
   customer: InvoiceCustomer;
   items: InvoiceItem[];
   workOrders: InvoiceWorkOrder[];
@@ -100,6 +101,8 @@ export interface InvoiceItemRequest {
   quantity: number;
   unitPriceExclVat: number;
   vatRate: number;
+  unitCode?: string;
+  discountPercentage?: number;
 }
 
 export interface CreateInvoiceRequest {
@@ -126,3 +129,4 @@ export interface MarkPaidInvoiceRequest {
 }
 
 export type InvoiceStatusFilter = InvoiceStatus | 'all';
+
