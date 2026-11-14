@@ -107,7 +107,7 @@ export class InvoiceForm implements OnInit {
           }
 
           this.invoiceForm.patchValue({
-            customerId: draft.customerId,
+            customerId: draft.customer.id,
             notes: draft.notes ?? '',
           });
 
@@ -226,7 +226,7 @@ export class InvoiceForm implements OnInit {
     const changes: UpdateInvoiceRequest = {};
 
     if (draft) {
-      if (formValue.customerId !== draft.customerId) {
+      if (formValue.customerId !== draft.customer.id) {
         changes.customerId = formValue.customerId;
       }
 
